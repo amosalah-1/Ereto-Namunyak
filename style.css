@@ -564,3 +564,12 @@ footer p{
 li{
     list-style-type: none;
 }
+
+.card img{
+    border-radius: 20px;
+    width: 100%;
+    height: 100%;
+    display: block;
+    margin: 10px auto;
+    padding: 0px;
+}

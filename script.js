@@ -52,7 +52,7 @@ window.addEventListener('scroll', () => {
 // EmailJS initialization and contact form handler
 (function(){
     if (window.emailjs) {
-        emailjs.init('kMynwLXa8kkmALWvS'); // replace with your EmailJS user/public key
+        emailjs.init("DGBkCOwpVOnKHlvOJ"); // replace with your EmailJS user/public key
     } else {
         console.warn('EmailJS SDK not loaded.');
     }
@@ -67,7 +67,7 @@ if (contactForm) {
         if (submitBtn) submitBtn.disabled = true;
         if (statusEl) statusEl.textContent = 'Sending…';
 
-        emailjs.sendForm('service_hk2dubq','template_5uvzm4q', this)
+        emailjs.sendForm("service_hk2dubq","template_5uvzm4q", this)
             .then(() => {
                 if (statusEl) statusEl.textContent = 'Message sent — thank you!';
                 contactForm.reset();
