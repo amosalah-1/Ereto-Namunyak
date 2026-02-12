@@ -79,3 +79,33 @@ if (contactForm) {
             });
     });
 }
+
+// Stats Counter Animation
+const statsSection = document.getElementById('impact');
+const stats = document.querySelectorAll('.stat-number');
+let statsStarted = false;
+
+if (statsSection && stats.length > 0) {
+    const statsObserver = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && !statsStarted) {
+            stats.forEach(stat => {
+                const target = +stat.getAttribute('data-target');
+                const duration = 1500; 
+                const increment = target / (duration / 16);
+                let current = 0;
+                const update = () => {
+                    current += increment;
+                    if (current < target) {
+                        stat.textContent = Math.ceil(current);
+                        requestAnimationFrame(update);
+                    } else {
+                        stat.textContent = target + "+";
+                    }
+                };
+                update();
+            });
+            statsStarted = true;
+        }
+    }, { threshold: 0.5 });
+    statsObserver.observe(statsSection);
+}

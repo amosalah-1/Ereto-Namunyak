@@ -187,12 +187,37 @@ section::before{
 section > *{position:relative;z-index:2;color:var(--muted);}
 section h2, section p, .card, footer p{color:#153243}
 
-section h2{margin-bottom:20px;color:var(--primary)}
+section h2{
+    margin-bottom:20px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+}
 
 /* Cards */
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:22px}
 .card{background:linear-gradient(180deg,rgba(255,255,255,.98),var(--glass));padding:28px;border-radius:14px;box-shadow:0 8px 24px rgba(11,18,33,.08);transition:transform .36s cubic-bezier(.2,.9,.2,1),box-shadow .36s}
 .card:hover{transform:translateY(-16px) rotate(-.6deg);box-shadow:0 30px 40px rgba(11,18,33,.12)}
+
+/* Stats Section */
+.stats-grid {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 30px;
+    margin-top: 20px;
+}
+.stat-item {
+    text-align: center;
+}
+.stat-number {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1.2;
+    margin-bottom: 5px;
+}
 
 /* Form */
 form{display:flex;flex-direction:column;gap:15px}
