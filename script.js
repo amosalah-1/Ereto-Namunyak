@@ -67,7 +67,7 @@ if (contactForm) {
         if (submitBtn) submitBtn.disabled = true;
         if (statusEl) statusEl.textContent = 'Sending…';
 
-        emailjs.sendForm('service_9ookyda', 'template_5uvzm4q', this, '4mFlwg7HJxXVy7rrv')
+        emailjs.sendForm('service_9ookyda', 'template_5uvzm4q', this)
             .then(() => {
                 if (statusEl) statusEl.textContent = 'Message sent — thank you!';
                 contactForm.reset();
