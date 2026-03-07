@@ -109,3 +109,19 @@ if (statsSection && stats.length > 0) {
     }, { threshold: 0.5 });
     statsObserver.observe(statsSection);
 }
+
+// Dynamic Year
+const yearSpan = document.getElementById('year');
+if (yearSpan) {
+    yearSpan.textContent = new Date().getFullYear();
+}
+
+// Mobile Menu Toggle
+const menuToggle = document.querySelector('.mobile-menu-toggle');
+const navLinksContainer = document.querySelector('.nav-links');
+
+if (menuToggle && navLinksContainer) {
+    menuToggle.addEventListener('click', () => {
+        navLinksContainer.classList.toggle('active');
+    });
+}
