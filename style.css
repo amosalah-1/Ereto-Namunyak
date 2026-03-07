@@ -200,7 +200,13 @@ section h2{
 
 /* Cards */
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:22px}
-.card{background:linear-gradient(180deg,rgba(255,255,255,.98),var(--glass));padding:28px;border-radius:14px;box-shadow:0 8px 24px rgba(11,18,33,.08);transition:transform .36s cubic-bezier(.2,.9,.2,1),box-shadow .36s}
+.card{
+    background:linear-gradient(180deg,rgba(255,255,255,.98),var(--glass));
+    padding:20px;
+    border-radius:14px;
+    box-shadow:0 8px 24px rgba(11,18,33,.08);
+    transition:transform .36s cubic-bezier(.2,.9,.2,1),box-shadow .36s
+}
 .card:hover{transform:translateY(-16px) rotate(-.6deg);box-shadow:0 30px 40px rgba(11,18,33,.12)}
 
 /* Stats Section */
@@ -621,14 +627,18 @@ li{
     list-style-type: none;
 }
 
+.card-images {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 5px;
+}
+
 .card img{
-    border-radius: 20px;
-    width: 100%;
-    height: 200px;
+    border-radius: 10px;
+    width: auto;
+    height: 160px;
     object-fit: cover;
-    display: block;
-    margin: 10px auto;
-    padding: 0px;
 }
 
 span{
