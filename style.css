@@ -21,6 +21,17 @@ body{
     -webkit-font-smoothing:antialiased;
 }
 
+/* Top Bar Background */
+.top-bar-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 68px;
+    background: var(--primary);
+    z-index: 900;
+}
+
 /* Floating Brand */
 .floating-brand{
     position:fixed;
@@ -372,6 +383,10 @@ footer p{
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
+    .top-bar-bg {
+        height: 50px;
+    }
+    
     /* Floating Brand */
     .floating-brand {
         position: fixed;
