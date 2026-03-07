@@ -28,7 +28,7 @@ body{
     left: 0;
     width: 100%;
     height: 68px;
-    background: var(--primary);
+    background: rgba(30,55,153,0.95);
     z-index: 900;
 }
 
