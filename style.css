@@ -624,6 +624,7 @@ footer p{
         overflow-x: visible;
         scrollbar-width: none; /* Hide scrollbar on mobile */
         gap: 16px;
+        align-items: center; /* Center the images horizontally */
     }
 
     .card-gallery::-webkit-scrollbar {
@@ -631,7 +632,7 @@ footer p{
     }
 
     .card img {
-        width: 100%;
+        width: 90%; /* Make image narrower than the card to allow for centering */
         height: auto;
         object-fit: contain;
     }
