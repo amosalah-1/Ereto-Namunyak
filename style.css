@@ -487,6 +487,46 @@ footer p{
     gap: 8px;
 }
 
+/* Back to Top Button */
+.back-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--accent), #f5a623);
+    color: #102a43;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 20px rgba(246, 185, 59, 0.4);
+    cursor: pointer;
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+}
+
+.back-to-top svg {
+    width: 22px;
+    height: 22px;
+    stroke: #102a43;
+}
+
+.back-to-top.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.back-to-top:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 28px rgba(246, 185, 59, 0.6);
+}
+
 /* Animations */
 .fade-in{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s;transition-delay:var(--delay,0s)}
 .fade-in.show{opacity:1;transform:translateY(0)}
@@ -758,6 +798,13 @@ span {
 
     .footer-contact p {
         justify-content: center;
+    }
+
+    .back-to-top {
+        bottom: 20px;
+        right: 20px;
+        width: 45px;
+        height: 45px;
     }
 }
 
