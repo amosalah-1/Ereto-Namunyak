@@ -7,6 +7,15 @@ window.addEventListener("load", () => {
     }
 });
 
+// Fail-safe: Remove loader after 5s if window load event hangs
+setTimeout(() => {
+    const l = document.getElementById("loader");
+    if (l && !l.classList.contains('hidden')) {
+        l.classList.add('hidden');
+        setTimeout(() => l.remove(), 800);
+    }
+}, 5000);
+
 // Staggered reveal for elements with .fade-in
 const faders = document.querySelectorAll('.fade-in');
 faders.forEach((el, i) => {
@@ -42,11 +51,19 @@ if (typedEl) {
 // Nav link active state on scroll
 const sections = Array.from(document.querySelectorAll('section[id]'));
 const navLinks = Array.from(document.querySelectorAll('nav a'));
+let isScrolling = false;
+
 window.addEventListener('scroll', () => {
-    const top = window.scrollY + 120;
-    let current = sections[0];
-    for (const s of sections) if (s.offsetTop <= top) current = s;
-    navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === `#${current.id}`));
+    if (!isScrolling) {
+        window.requestAnimationFrame(() => {
+            const top = window.scrollY + 120;
+            let current = sections[0];
+            for (const s of sections) if (s.offsetTop <= top) current = s;
+            navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === `#${current.id}`));
+            isScrolling = false;
+        });
+        isScrolling = true;
+    }
 });
 
 // EmailJS initialization and contact form handler
@@ -122,6 +139,8 @@ const navLinksContainer = document.querySelector('.nav-links');
 
 if (menuToggle && navLinksContainer) {
     menuToggle.addEventListener('click', () => {
+        const isExpanded = navLinksContainer.classList.contains('active');
+        menuToggle.setAttribute('aria-expanded', !isExpanded);
         navLinksContainer.classList.toggle('active');
     });
 }
