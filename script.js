@@ -26,7 +26,7 @@ const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) entry.target.classList.add('show');
     });
-}, {threshold: 0.18});
+}, {threshold: 0.05});
 
 faders.forEach(f => observer.observe(f));
 
