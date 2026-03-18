@@ -106,14 +106,19 @@ app.post('/api/contact', async (req, res) => {
         }
 
         // 3. Create Transporter (Scoped to request for safety)
-        const smtpPort = parseInt(process.env.SMTP_PORT, 10);
+        // Fix: Remove spaces from password (common issue with Gmail App Passwords)
+        const cleanPass = process.env.SMTP_PASS ? process.env.SMTP_PASS.replace(/\s+/g, '') : '';
+        const smtpPort = parseInt(process.env.SMTP_PORT, 10) || 465; // Default to 465 if invalid
+
+        console.log(`Preparing to send email via ${process.env.SMTP_HOST}:${smtpPort}`);
+
         const transporter = nodemailer.createTransport({
             host: process.env.SMTP_HOST,
             port: smtpPort,
             secure: smtpPort === 465, // `secure: true` is ONLY for port 465. Port 587 uses `secure: false`.
             auth: {
                 user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS
+                pass: cleanPass
             },
             tls: {
                 // Helps prevent connection errors due to certificate issues in cloud environments
@@ -142,7 +147,11 @@ app.post('/api/contact', async (req, res) => {
         console.log('✅ Email sent successfully! Message ID:', info.messageId);
         res.status(200).json({ success: true, message: 'Email sent successfully!' });
     } catch (error) {
-        console.error('❌ Email sending failed:', error);
+        console.error('❌ Email sending failed:', {
+            message: error.message,
+            code: error.code,
+            response: error.response
+        });
         res.status(500).json({ success: false, message: error.message || 'Failed to send email.' });
     }
 });
