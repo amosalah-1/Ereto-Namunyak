@@ -69,9 +69,13 @@ async function registerIPN(token, baseUrlOverride) {
     try {
         const ipnId = process.env.PESAPAL_IPN_ID;
         // Check if a valid, non-empty IPN ID is provided in the environment
-        if (ipnId && ipnId.trim() !== "") {
+        // Pesapal IPN IDs are typically UUIDs (36 characters). 
+        // If the ID is too short, it might be an error or a tracking ID, so we skip it.
+        if (ipnId && ipnId.trim().length > 30) {
             console.log(`Using pre-configured PESAPAL_IPN_ID.`);
             return ipnId;
+        } else if (ipnId) {
+            console.warn(`⚠️ Warning: PESAPAL_IPN_ID is set but looks invalid (${ipnId}). Ignoring it.`);
         }
 
         console.log("PESAPAL_IPN_ID not set. Proceeding with dynamic IPN registration.");
