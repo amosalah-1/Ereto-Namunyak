@@ -80,10 +80,9 @@ async function registerIPN(token) {
         });
         return response.data.ipn_id;
     } catch (error) {
-        console.error("IPN Registration Error:", error.response ? error.response.data : error.message);
-        // If on localhost, this usually fails because Pesapal can't reach you. 
-        // We return null, but the payment creation must handle this.
-        return null; 
+        console.error("IPN Registration Error:", error.response ? JSON.stringify(error.response.data) : error.message);
+        // Throw error so we can report it to the client
+        throw new Error(`IPN Registration Failed: ${error.response?.data?.error?.message || error.message}`);
     }
 }
 
@@ -133,6 +132,11 @@ app.post('/api/create-payment', async (req, res) => {
     }
 
     try {
+        // Ensure BASE_URL is defined
+        if (!process.env.BASE_URL) {
+            throw new Error("Server Error: BASE_URL is not configured.");
+        }
+
         // Step 1: Get Token
         const token = await getPesapalToken();
 
@@ -163,7 +167,12 @@ app.post('/api/create-payment', async (req, res) => {
                 phone_number: phone || "",
                 country_code: "KE",
                 first_name: firstName,
-                last_name: lastName
+                last_name: lastName,
+                line_1: "Donation",
+                city: "Nairobi",
+                state: "Nairobi",
+                postal_code: "00100",
+                zip_code: "00100"
             }
         };
 
@@ -182,7 +191,8 @@ app.post('/api/create-payment', async (req, res) => {
 
     } catch (error) {
         console.error("Payment Creation Error:", error);
-        res.status(500).json({ error: "Failed to initiate payment." });
+        const msg = error.response?.data?.error?.message || error.response?.data?.message || error.message || "Unknown Error";
+        res.status(500).json({ error: msg });
     }
 });
 

@@ -234,9 +234,10 @@ if (donationForm) {
             },
             body: JSON.stringify({ amount: amount, name: name, phone: phone }),
         })
-        .then(response => {
+        .then(async response => {
             if (!response.ok) {
-                throw new Error('Payment initiation failed. Please try again.');
+                const errData = await response.json();
+                throw new Error(errData.error || 'Payment initiation failed.');
             }
             return response.json();
         })
