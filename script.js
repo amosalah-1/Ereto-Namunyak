@@ -193,6 +193,26 @@ if (backToTopBtn) {
 const donateBtn = document.getElementById('donate-btn-open');
 const donationModal = document.getElementById('donation-modal');
 const closeDonationModal = document.querySelector('.modal-close');
+let donationAbortController = null;
+
+function cancelDonationProcess() {
+    // 1. Abort any ongoing network request
+    if (donationAbortController) {
+        donationAbortController.abort();
+        donationAbortController = null;
+    }
+    // 2. Reset the form UI immediately
+    const form = document.getElementById('donation-form');
+    if (form) {
+        const btn = form.querySelector('.btn-submit-donation');
+        const status = document.getElementById('donation-status');
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = "Proceed to Pesapal";
+        }
+        if (status) status.textContent = "";
+    }
+}
 
 if (donateBtn && donationModal && closeDonationModal) {
     donateBtn.addEventListener('click', () => {
@@ -200,9 +220,13 @@ if (donateBtn && donationModal && closeDonationModal) {
     });
     closeDonationModal.addEventListener('click', () => {
         donationModal.classList.remove('show');
+        cancelDonationProcess();
     });
     donationModal.addEventListener('click', (e) => {
-        if (e.target === donationModal) donationModal.classList.remove('show');
+        if (e.target === donationModal) {
+            donationModal.classList.remove('show');
+            cancelDonationProcess();
+        }
     });
 }
 
@@ -238,6 +262,10 @@ if (donationForm) {
         if (statusDiv) statusDiv.textContent = "Initiating payment gateway...";
         if (statusDiv) statusDiv.style.color = "inherit";
 
+        // Initialize a new controller for this request
+        if (donationAbortController) donationAbortController.abort();
+        donationAbortController = new AbortController();
+
         // This function sends the donation data to your backend server.
         // The backend will then securely communicate with Pesapal.
         // You must create this '/api/create-payment' endpoint on your server.
@@ -247,6 +275,7 @@ if (donationForm) {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ amount: amount, name: name, phone: phone }),
+            signal: donationAbortController.signal
         })
         .then(async response => {
             const text = await response.text();
@@ -274,6 +303,7 @@ if (donationForm) {
             }
         })
         .catch(error => {
+            if (error.name === 'AbortError') return; // Ignore user cancellations
             console.error('Payment Error:', error);
             if (statusDiv) {
                 statusDiv.textContent = error.message || 'An unexpected error occurred.';

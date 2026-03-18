@@ -965,15 +965,15 @@ span {
     }
 
     .modal-content p {
-        margin-bottom: 15px;
-    }
-
-    #donation-form .form-group {
         margin-bottom: 12px;
     }
 
+    #donation-form .form-group {
+        margin-bottom: 10px;
+    }
+
     #donation-form label {
-        font-size: 0.85rem;
+        font-size: 0.80rem;
         margin-bottom: 6px;
     }
 
