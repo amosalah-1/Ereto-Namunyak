@@ -90,19 +90,22 @@ if (contactForm) {
         })
         .then(async response => {
             const text = await response.text();
+            let result;
+
             try {
-                const result = JSON.parse(text);
-                if (!response.ok || !result.success) {
-                    throw new Error(result.message || 'Failed to send message.');
-                }
-                return result;
-            } catch (e) {
-                // If not JSON (e.g. Vercel 500 HTML error), throw raw text
+                result = JSON.parse(text);
+            } catch (error) {
                 if (text.includes("<!DOCTYPE html>") || text.includes("<html>")) {
                     throw new Error("Server Error: Please check Vercel Logs for details.");
                 }
-                throw new Error(e.message === 'Failed to send message.' ? e.message : (text.substring(0, 100) || 'Server Error'));
+                throw new Error(text || `Server Error: ${response.status}`);
             }
+
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || 'Failed to send message.');
+            }
+
+            return result;
         })
         .then(result => {
             if (statusEl) statusEl.textContent = 'Message sent — thank you!';
@@ -246,18 +249,21 @@ if (donationForm) {
             body: JSON.stringify({ amount: amount, name: name, phone: phone }),
         })
         .then(async response => {
-            const text = await response.text(); // Read raw text first
+            const text = await response.text();
+            let data;
+
             try {
-                const data = JSON.parse(text); // Try parsing JSON
-                if (!response.ok) {
-                    throw new Error(data.error || 'Payment initiation failed.');
-                }
-                return data;
-            } catch (e) {
-                // If JSON parse fails, throw the raw text (which contains the actual server error)
+                data = JSON.parse(text);
+            } catch (error) {
                 console.error("Server Response:", text);
-                throw new Error(text.substring(0, 150) || `Server Error: ${response.status}`);
+                throw new Error(text || `Server Error: ${response.status}`);
             }
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Payment initiation failed.');
+            }
+
+            return data;
         })
         .then(data => {
             if (data && data.redirect_url) {
