@@ -71,10 +71,19 @@ async function getPesapalToken() {
 async function registerIPN(token, baseUrlOverride) {
     try {
         const ipnId = process.env.PESAPAL_IPN_ID;
-        if (ipnId) return ipnId;
+        // Check if a valid, non-empty IPN ID is provided in the environment
+        if (ipnId && ipnId.trim() !== "") {
+            console.log(`Using pre-configured PESAPAL_IPN_ID.`);
+            return ipnId;
+        }
+
+        console.log("PESAPAL_IPN_ID not set. Proceeding with dynamic IPN registration.");
 
         // Use provided baseUrl or fallback to env, ensuring no trailing slash
         const baseUrl = (baseUrlOverride || process.env.BASE_URL || "").replace(/\/$/, "");
+        if (!baseUrl) {
+            throw new Error("Cannot register IPN: BASE_URL is not set in environment variables.");
+        }
         const callbackUrl = `${baseUrl}/api/payment-ipn`;
         
         console.log(`Attempting to register IPN with URL: ${callbackUrl}`);
@@ -83,12 +92,13 @@ async function registerIPN(token, baseUrlOverride) {
             url: callbackUrl,
             ipn_notification_type: 'GET'
         }, {
-            headers: { 
+            headers: {
                 'Accept': 'application/json', 
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             }
         });
+        console.log(`✅ Dynamically registered IPN. Received ID: ${response.data.ipn_id}`);
         return response.data.ipn_id;
     } catch (error) {
         console.error("IPN Registration Error:", error.response ? JSON.stringify(error.response.data) : error.message);
