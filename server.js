@@ -245,7 +245,9 @@ app.get('/api/payment-ipn', async (req, res) => {
 // Start Server
 if (require.main === module) {
     app.listen(PORT, () => {
-        console.log(`Server running at http://localhost:${PORT}`);
+        console.log(`\n🚀 Local Server running at: http://localhost:${PORT}`);
+        console.log(`🌍 Configured BASE_URL:   ${process.env.BASE_URL || '(Not Set)'}`);
+        console.log(`ℹ️  Note: This log only appears on your computer. On Vercel, the app runs in the cloud.\n`);
     });
 }
 
