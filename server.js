@@ -62,12 +62,17 @@ async function getPesapalToken() {
 }
 
 // Helper: Register IPN (Instant Payment Notification)
-async function registerIPN(token) {
+async function registerIPN(token, baseUrlOverride) {
     try {
-        if (PESAPAL_IPN_ID) return PESAPAL_IPN_ID;
+        const ipnId = process.env.PESAPAL_IPN_ID;
+        if (ipnId) return ipnId;
 
-        const callbackUrl = `${process.env.BASE_URL}/api/payment-ipn`;
+        // Use provided baseUrl or fallback to env, ensuring no trailing slash
+        const baseUrl = (baseUrlOverride || process.env.BASE_URL || "").replace(/\/$/, "");
+        const callbackUrl = `${baseUrl}/api/payment-ipn`;
         
+        console.log(`Attempting to register IPN with URL: ${callbackUrl}`);
+
         const response = await axios.post(`${PESAPAL_URL}/api/URLSetup/RegisterIPN`, {
             url: callbackUrl,
             ipn_notification_type: 'GET'
@@ -134,14 +139,17 @@ app.post('/api/create-payment', async (req, res) => {
     try {
         // Ensure BASE_URL is defined
         if (!process.env.BASE_URL) {
-            throw new Error("Server Error: BASE_URL is not configured.");
+            throw new Error("Server Error: BASE_URL is not configured in Environment Variables.");
         }
+        
+        // Clean BASE_URL (Remove trailing slash if present)
+        const baseUrl = process.env.BASE_URL.replace(/\/$/, "");
 
         // Step 1: Get Token
         const token = await getPesapalToken();
 
         // Step 2: Register IPN (Instant Payment Notification)
-        const ipnId = await registerIPN(token);
+        const ipnId = await registerIPN(token, baseUrl);
         if (!ipnId) {
             throw new Error("Failed to register IPN. Ensure BASE_URL is public and/or set PESAPAL_IPN_ID.");
         }
@@ -160,7 +168,7 @@ app.post('/api/create-payment', async (req, res) => {
             currency: "KES",
             amount: parseFloat(amount),
             description: "Donation to Ereto Namunyak",
-            callback_url: `${process.env.BASE_URL}/index.html?status=success`, // Redirect here after payment
+            callback_url: `${baseUrl}/index.html?status=success`, // Redirect here after payment
             notification_id: ipnId,
             billing_address: {
                 email_address: "donor@anonymous.com", // Placeholder since we didn't ask for email
