@@ -101,8 +101,10 @@ app.post('/api/contact', async (req, res) => {
         }
 
         // 2. Validate Configuration (Prevent "Server Error" crashes)
-        if (!process.env.SMTP_HOST || !process.env.SMTP_PORT || !process.env.SMTP_USER || !process.env.SMTP_PASS || !process.env.EMAIL_TO) {
-            throw new Error("Server Config Error: Missing SMTP settings in Vercel.");
+        const requiredSmtpVars = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 'EMAIL_TO'];
+        const missingSmtpVars = requiredSmtpVars.filter((key) => !String(process.env[key] || '').trim());
+        if (missingSmtpVars.length > 0) {
+            throw new Error(`Server Config Error: Missing SMTP settings in Vercel: ${missingSmtpVars.join(', ')}`);
         }
 
         // 3. Create Transporter (Scoped to request for safety)
