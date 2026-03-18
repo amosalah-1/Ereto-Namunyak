@@ -971,4 +971,19 @@ span {
     #donation-form .form-group {
         margin-bottom: 12px;
     }
+
+    #donation-form label {
+        font-size: 0.85rem;
+        margin-bottom: 6px;
+    }
+
+    #donation-form input {
+        font-size: 1rem; /* Keep at 16px to prevent iOS auto-zoom */
+        padding: 12px;
+    }
+
+    #donation-form .btn-submit-donation {
+        padding: 12px;
+        font-size: 0.95rem;
+    }
 }
