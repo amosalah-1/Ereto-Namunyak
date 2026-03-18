@@ -112,29 +112,35 @@ async function registerIPN(token, baseUrlOverride) {
 
 // 1. Send Email Route
 app.post('/api/contact', async (req, res) => {
-    const { from_name, from_email, message } = req.body;
-
-    if (!from_name || !from_email || !message) {
-        return res.status(400).json({ success: false, message: 'Missing required fields.' });
-    }
-
-    const mailOptions = {
-        from: {
-            name: `Ereto Namunyak Website`, // The name that appears in the 'from' field
-            address: process.env.SMTP_USER // The email address it is sent from
-        },
-        replyTo: from_email,
-        to: process.env.EMAIL_TO,
-        subject: `New Contact Message from ${from_name}`,
-        text: `Name: ${from_name}\nEmail: ${from_email}\n\nMessage:\n${message}`,
-        html: `<h3>New Message from Ereto Namunyak Website</h3>
-               <p><strong>Name:</strong> ${from_name}</p>
-               <p><strong>Email:</strong> <a href="mailto:${from_email}">${from_email}</a></p>
-               <br>
-               <p><strong>Message:</strong><br>${message.replace(/\n/g, '<br>')}</p>`
-    };
-
     try {
+        const { from_name, from_email, message } = req.body;
+
+        // 1. Validate Input
+        if (!from_name || !from_email || !message) {
+            return res.status(400).json({ success: false, message: 'Missing required fields.' });
+        }
+
+        // 2. Validate Configuration (Prevent "Server Error" crashes)
+        if (!process.env.SMTP_USER || !process.env.SMTP_PASS || !process.env.EMAIL_TO) {
+            throw new Error("Server Config Error: Missing SMTP settings in Vercel.");
+        }
+
+        const mailOptions = {
+            from: {
+                name: `Ereto Namunyak Website`, // The name that appears in the 'from' field
+                address: process.env.SMTP_USER // The email address it is sent from
+            },
+            replyTo: from_email,
+            to: process.env.EMAIL_TO,
+            subject: `New Contact Message from ${from_name}`,
+            text: `Name: ${from_name}\nEmail: ${from_email}\n\nMessage:\n${message}`,
+            html: `<h3>New Message from Ereto Namunyak Website</h3>
+                   <p><strong>Name:</strong> ${from_name}</p>
+                   <p><strong>Email:</strong> <a href="mailto:${from_email}">${from_email}</a></p>
+                   <br>
+                   <p><strong>Message:</strong><br>${message.replace(/\n/g, '<br>')}</p>`
+        };
+
         console.log(`Attempting to send contact email from ${from_email}...`);
         const info = await transporter.sendMail(mailOptions);
         console.log('✅ Email sent successfully! Message ID:', info.messageId);
