@@ -235,11 +235,18 @@ if (donationForm) {
             body: JSON.stringify({ amount: amount, name: name, phone: phone }),
         })
         .then(async response => {
-            if (!response.ok) {
-                const errData = await response.json();
-                throw new Error(errData.error || 'Payment initiation failed.');
+            const text = await response.text(); // Read raw text first
+            try {
+                const data = JSON.parse(text); // Try parsing JSON
+                if (!response.ok) {
+                    throw new Error(data.error || 'Payment initiation failed.');
+                }
+                return data;
+            } catch (e) {
+                // If JSON parse fails, throw the raw text (which contains the actual server error)
+                console.error("Server Response:", text);
+                throw new Error(text.substring(0, 150) || `Server Error: ${response.status}`);
             }
-            return response.json();
         })
         .then(data => {
             if (data && data.redirect_url) {
