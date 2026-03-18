@@ -98,6 +98,9 @@ if (contactForm) {
                 return result;
             } catch (e) {
                 // If not JSON (e.g. Vercel 500 HTML error), throw raw text
+                if (text.includes("<!DOCTYPE html>") || text.includes("<html>")) {
+                    throw new Error("Server Error: Please check Vercel Logs for details.");
+                }
                 throw new Error(e.message === 'Failed to send message.' ? e.message : (text.substring(0, 100) || 'Server Error'));
             }
         })

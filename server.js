@@ -106,13 +106,18 @@ app.post('/api/contact', async (req, res) => {
         }
 
         // 3. Create Transporter (Scoped to request for safety)
+        const smtpPort = parseInt(process.env.SMTP_PORT, 10);
         const transporter = nodemailer.createTransport({
             host: process.env.SMTP_HOST,
-            port: Number(process.env.SMTP_PORT),
-            secure: Number(process.env.SMTP_PORT) === 465,
+            port: smtpPort,
+            secure: smtpPort === 465, // `secure: true` is ONLY for port 465. Port 587 uses `secure: false`.
             auth: {
                 user: process.env.SMTP_USER,
                 pass: process.env.SMTP_PASS
+            },
+            tls: {
+                // Helps prevent connection errors due to certificate issues in cloud environments
+                rejectUnauthorized: false
             }
         });
 
@@ -259,9 +264,9 @@ app.get('/api/payment-ipn', async (req, res) => {
 // Start Server
 if (require.main === module) {
     app.listen(PORT, () => {
-        console.log(`\n🚀 Local Server running at: http://localhost:${PORT}`);
-        console.log(`🌍 Configured BASE_URL:   ${process.env.BASE_URL || '(Not Set)'}`);
-        console.log(`ℹ️  Note: This log only appears on your computer. On Vercel, the app runs in the cloud.\n`);
+        console.log(`\nLocal Server running at: http://localhost:${PORT}`);
+        console.log(`Configured BASE_URL:   ${process.env.BASE_URL || '(Not Set)'}`);
+        console.log(`Note: This log only appears on your computer. On Vercel, the app runs in the cloud.\n`);
     });
 }
 
