@@ -19,26 +19,6 @@ app.use((req, res, next) => {
     next();
 });
 
-// --- EMAIL CONFIGURATION ---
-const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT),
-    secure: Number(process.env.SMTP_PORT) === 465, // true for 465, false for other ports
-    auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
-    }
-});
-
-// Verify SMTP Connection on Startup
-transporter.verify((error, success) => {
-    if (error) {
-        console.error('❌ SMTP Connection Error:', error);
-    } else {
-        console.log('✅ SMTP Server is ready to send emails');
-    }
-});
-
 // --- PESAPAL CONFIGURATION ---
 const PESAPAL_URL = 'https://pay.pesapal.com/v3';
 const PESAPAL_CONSUMER_KEY = process.env.PESAPAL_CONSUMER_KEY;
@@ -121,9 +101,20 @@ app.post('/api/contact', async (req, res) => {
         }
 
         // 2. Validate Configuration (Prevent "Server Error" crashes)
-        if (!process.env.SMTP_USER || !process.env.SMTP_PASS || !process.env.EMAIL_TO) {
+        if (!process.env.SMTP_HOST || !process.env.SMTP_PORT || !process.env.SMTP_USER || !process.env.SMTP_PASS || !process.env.EMAIL_TO) {
             throw new Error("Server Config Error: Missing SMTP settings in Vercel.");
         }
+
+        // 3. Create Transporter (Scoped to request for safety)
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: Number(process.env.SMTP_PORT),
+            secure: Number(process.env.SMTP_PORT) === 465,
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS
+            }
+        });
 
         const mailOptions = {
             from: {
