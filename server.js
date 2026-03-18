@@ -19,9 +19,6 @@ app.use((req, res, next) => {
     next();
 });
 
-// Serve static files (HTML, CSS, JS, Images)
-app.use(express.static(path.join(__dirname)));
-
 // --- EMAIL CONFIGURATION ---
 const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
