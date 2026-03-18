@@ -22,8 +22,8 @@ app.use((req, res, next) => {
 // --- EMAIL CONFIGURATION ---
 const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
-    port: process.env.SMTP_PORT,
-    secure: false, // true for 465, false for other ports
+    port: Number(process.env.SMTP_PORT),
+    secure: Number(process.env.SMTP_PORT) === 465, // true for 465, false for other ports
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS
@@ -141,7 +141,7 @@ app.post('/api/contact', async (req, res) => {
         res.status(200).json({ success: true, message: 'Email sent successfully!' });
     } catch (error) {
         console.error('❌ Email sending failed:', error);
-        res.status(500).json({ success: false, message: 'Failed to send email.' });
+        res.status(500).json({ success: false, message: error.message || 'Failed to send email.' });
     }
 });
 

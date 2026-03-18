@@ -88,18 +88,26 @@ if (contactForm) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         })
-        .then(response => response.json())
-        .then(result => {
-            if (result.success) {
-                if (statusEl) statusEl.textContent = 'Message sent — thank you!';
-                contactForm.reset();
-            } else {
-                throw new Error(result.message);
+        .then(async response => {
+            const text = await response.text();
+            try {
+                const result = JSON.parse(text);
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || 'Failed to send message.');
+                }
+                return result;
+            } catch (e) {
+                // If not JSON (e.g. Vercel 500 HTML error), throw raw text
+                throw new Error(e.message === 'Failed to send message.' ? e.message : (text.substring(0, 100) || 'Server Error'));
             }
+        })
+        .then(result => {
+            if (statusEl) statusEl.textContent = 'Message sent — thank you!';
+            contactForm.reset();
         })
         .catch(err => {
             console.error('Contact Form Error:', err);
-            if (statusEl) statusEl.textContent = 'Sending failed. Please try again later.';
+            if (statusEl) statusEl.textContent = err.message || 'Sending failed. Please try again later.';
         })
         .finally(() => {
             if (submitBtn) submitBtn.disabled = false;
