@@ -2,28 +2,56 @@ const express = require('express');
 const axios = require('axios');
 const nodemailer = require('nodemailer');
 const cors = require('cors');
-const path = require('path');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const REQUIRED_SMTP_VARS = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 'EMAIL_TO'];
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Debug Middleware: Log all requests to Vercel Function Logs
+// Debug middleware for local and Vercel function logs
 app.use((req, res, next) => {
     console.log(`[${req.method}] ${req.url}`);
     next();
 });
 
+function getEnvValue(key) {
+    const value = process.env[key];
+    if (typeof value !== 'string') {
+        return '';
+    }
+
+    return value.trim().replace(/^['"]|['"]$/g, '');
+}
+
+function getMissingEnvVars(keys) {
+    return keys.filter((key) => !getEnvValue(key));
+}
+
+function getRuntimeLabel() {
+    return getEnvValue('VERCEL_ENV') || getEnvValue('NODE_ENV') || 'local';
+}
+
+function formatMailError(error) {
+    if (error.code === 'EAUTH') {
+        return 'SMTP authentication failed. Check SMTP_USER and SMTP_PASS in Vercel.';
+    }
+
+    if (error.code === 'ESOCKET' || error.code === 'ECONNECTION' || error.code === 'ETIMEDOUT') {
+        return 'SMTP connection failed. Check SMTP_HOST, SMTP_PORT, and whether your mail provider accepts this connection.';
+    }
+
+    return error.message || 'Failed to send email.';
+}
+
 // --- PESAPAL CONFIGURATION ---
 const PESAPAL_URL = 'https://pay.pesapal.com/v3';
 const PESAPAL_CONSUMER_KEY = process.env.PESAPAL_CONSUMER_KEY;
 const PESAPAL_CONSUMER_SECRET = process.env.PESAPAL_CONSUMER_SECRET;
-const PESAPAL_IPN_ID = process.env.PESAPAL_IPN_ID;
 
 // Helper: Get Pesapal Auth Token
 async function getPesapalToken() {
@@ -31,16 +59,25 @@ async function getPesapalToken() {
         if (!PESAPAL_CONSUMER_KEY || !PESAPAL_CONSUMER_SECRET) {
             throw new Error('Missing Pesapal credentials. Check PESAPAL_CONSUMER_KEY and PESAPAL_CONSUMER_SECRET.');
         }
-        const response = await axios.post(`${PESAPAL_URL}/api/Auth/RequestToken`, {
-            consumer_key: PESAPAL_CONSUMER_KEY,
-            consumer_secret: PESAPAL_CONSUMER_SECRET
-        }, {
-            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }
-        });
+
+        const response = await axios.post(
+            `${PESAPAL_URL}/api/Auth/RequestToken`,
+            {
+                consumer_key: PESAPAL_CONSUMER_KEY,
+                consumer_secret: PESAPAL_CONSUMER_SECRET
+            },
+            {
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
         return response.data.token;
     } catch (error) {
-        console.error("Pesapal Auth Error:", error.response ? error.response.data : error.message);
-        throw new Error("Failed to authenticate with Payment Gateway");
+        console.error('Pesapal Auth Error:', error.response ? error.response.data : error.message);
+        throw new Error('Failed to authenticate with Payment Gateway');
     }
 }
 
@@ -48,42 +85,45 @@ async function getPesapalToken() {
 async function registerIPN(token, baseUrlOverride) {
     try {
         const ipnId = process.env.PESAPAL_IPN_ID;
-        // Check if a valid, non-empty IPN ID is provided in the environment
-        // Pesapal IPN IDs are typically UUIDs (36 characters). 
-        // If the ID is too short, it might be an error or a tracking ID, so we skip it.
+
         if (ipnId && ipnId.trim().length > 30) {
-            console.log(`Using pre-configured PESAPAL_IPN_ID.`);
+            console.log('Using pre-configured PESAPAL_IPN_ID.');
             return ipnId;
-        } else if (ipnId) {
-            console.warn(`⚠️ Warning: PESAPAL_IPN_ID is set but looks invalid (${ipnId}). Ignoring it.`);
         }
 
-        console.log("PESAPAL_IPN_ID not set. Proceeding with dynamic IPN registration.");
+        if (ipnId) {
+            console.warn(`Warning: PESAPAL_IPN_ID is set but looks invalid (${ipnId}). Ignoring it.`);
+        }
 
-        // Use provided baseUrl or fallback to env, ensuring no trailing slash
-        const baseUrl = (baseUrlOverride || process.env.BASE_URL || "").replace(/\/$/, "");
+        console.log('PESAPAL_IPN_ID not set. Proceeding with dynamic IPN registration.');
+
+        const baseUrl = (baseUrlOverride || process.env.BASE_URL || '').replace(/\/$/, '');
         if (!baseUrl) {
-            throw new Error("Cannot register IPN: BASE_URL is not set in environment variables.");
+            throw new Error('Cannot register IPN: BASE_URL is not set in environment variables.');
         }
+
         const callbackUrl = `${baseUrl}/api/payment-ipn`;
-        
         console.log(`Attempting to register IPN with URL: ${callbackUrl}`);
 
-        const response = await axios.post(`${PESAPAL_URL}/api/URLSetup/RegisterIPN`, {
-            url: callbackUrl,
-            ipn_notification_type: 'GET'
-        }, {
-            headers: {
-                'Accept': 'application/json', 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+        const response = await axios.post(
+            `${PESAPAL_URL}/api/URLSetup/RegisterIPN`,
+            {
+                url: callbackUrl,
+                ipn_notification_type: 'GET'
+            },
+            {
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                }
             }
-        });
-        console.log(`✅ Dynamically registered IPN. Received ID: ${response.data.ipn_id}`);
+        );
+
+        console.log(`Dynamically registered IPN. Received ID: ${response.data.ipn_id}`);
         return response.data.ipn_id;
     } catch (error) {
-        console.error("IPN Registration Error:", error.response ? JSON.stringify(error.response.data) : error.message);
-        // Throw error so we can report it to the client
+        console.error('IPN Registration Error:', error.response ? JSON.stringify(error.response.data) : error.message);
         throw new Error(`IPN Registration Failed: ${error.response?.data?.error?.message || error.message}`);
     }
 }
@@ -95,46 +135,51 @@ app.post('/api/contact', async (req, res) => {
     try {
         const { from_name, from_email, message } = req.body;
 
-        // 1. Validate Input
         if (!from_name || !from_email || !message) {
             return res.status(400).json({ success: false, message: 'Missing required fields.' });
         }
 
-        // 2. Validate Configuration (Prevent "Server Error" crashes)
-        const requiredSmtpVars = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 'EMAIL_TO'];
-        const missingSmtpVars = requiredSmtpVars.filter((key) => !String(process.env[key] || '').trim());
+        const missingSmtpVars = getMissingEnvVars(REQUIRED_SMTP_VARS);
         if (missingSmtpVars.length > 0) {
-            throw new Error(`Server Config Error: Missing SMTP settings in Vercel: ${missingSmtpVars.join(', ')}`);
+            console.error('Missing SMTP environment variables:', {
+                runtime: getRuntimeLabel(),
+                missing: missingSmtpVars
+            });
+            throw new Error(`Server Config Error [${getRuntimeLabel()}]: Missing SMTP settings in deployment: ${missingSmtpVars.join(', ')}`);
         }
 
-        // 3. Create Transporter (Scoped to request for safety)
-        // Fix: Remove spaces from password (common issue with Gmail App Passwords)
-        const cleanPass = process.env.SMTP_PASS ? process.env.SMTP_PASS.replace(/\s+/g, '') : '';
-        const smtpPort = parseInt(process.env.SMTP_PORT, 10) || 465; // Default to 465 if invalid
+        const smtpHost = getEnvValue('SMTP_HOST');
+        const smtpUser = getEnvValue('SMTP_USER');
+        const emailTo = getEnvValue('EMAIL_TO');
+        const cleanPass = getEnvValue('SMTP_PASS').replace(/\s+/g, '');
+        const smtpPort = parseInt(getEnvValue('SMTP_PORT'), 10) || 465;
 
-        console.log(`Preparing to send email via ${process.env.SMTP_HOST}:${smtpPort}`);
+        console.log(`Preparing to send email via ${smtpHost}:${smtpPort}`);
 
         const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST,
+            host: smtpHost,
             port: smtpPort,
-            secure: smtpPort === 465, // `secure: true` is ONLY for port 465. Port 587 uses `secure: false`.
+            secure: smtpPort === 465,
+            requireTLS: smtpPort === 587,
             auth: {
-                user: process.env.SMTP_USER,
+                user: smtpUser,
                 pass: cleanPass
             },
             tls: {
-                // Helps prevent connection errors due to certificate issues in cloud environments
                 rejectUnauthorized: false
             }
         });
 
         const mailOptions = {
             from: {
-                name: `Ereto Namunyak Website`, // The name that appears in the 'from' field
-                address: process.env.SMTP_USER // The email address it is sent from
+                name: 'Ereto Namunyak Website',
+                address: smtpUser
             },
-            replyTo: from_email,
-            to: process.env.EMAIL_TO,
+            replyTo: {
+                name: from_name,
+                address: from_email
+            },
+            to: emailTo,
             subject: `New Contact Message from ${from_name}`,
             text: `Name: ${from_name}\nEmail: ${from_email}\n\nMessage:\n${message}`,
             html: `<h3>New Message from Ereto Namunyak Website</h3>
@@ -146,15 +191,17 @@ app.post('/api/contact', async (req, res) => {
 
         console.log(`Attempting to send contact email from ${from_email}...`);
         const info = await transporter.sendMail(mailOptions);
-        console.log('✅ Email sent successfully! Message ID:', info.messageId);
+        console.log('Email sent successfully. Message ID:', info.messageId);
         res.status(200).json({ success: true, message: 'Email sent successfully!' });
     } catch (error) {
-        console.error('❌ Email sending failed:', {
-            message: error.message,
+        const safeMessage = formatMailError(error);
+        console.error('Email sending failed:', {
+            message: safeMessage,
+            originalMessage: error.message,
             code: error.code,
             response: error.response
         });
-        res.status(500).json({ success: false, message: error.message || 'Failed to send email.' });
+        res.status(500).json({ success: false, message: safeMessage });
     }
 });
 
@@ -162,74 +209,68 @@ app.post('/api/contact', async (req, res) => {
 app.post('/api/create-payment', async (req, res) => {
     const { amount, name, phone } = req.body;
 
-    if (!amount || isNaN(amount) || amount < 1) {
+    if (!amount || Number.isNaN(Number(amount)) || Number(amount) < 1) {
         return res.status(400).json({ error: 'Invalid amount' });
     }
 
     try {
-        // Ensure BASE_URL is defined
         if (!process.env.BASE_URL) {
-            throw new Error("Server Error: BASE_URL is not configured in Environment Variables.");
+            throw new Error('Server Error: BASE_URL is not configured in Environment Variables.');
         }
-        
-        // Clean BASE_URL (Remove trailing slash if present)
-        const baseUrl = process.env.BASE_URL.replace(/\/$/, "");
 
-        // Step 1: Get Token
+        const baseUrl = process.env.BASE_URL.replace(/\/$/, '');
+
         const token = await getPesapalToken();
-
-        // Step 2: Register IPN (Instant Payment Notification)
         const ipnId = await registerIPN(token, baseUrl);
         if (!ipnId) {
-            throw new Error("Failed to register IPN. Ensure BASE_URL is public and/or set PESAPAL_IPN_ID.");
+            throw new Error('Failed to register IPN. Ensure BASE_URL is public and/or set PESAPAL_IPN_ID.');
         }
-        
-        // Step 3: Submit Order
-        const orderId = `EN-${Date.now()}`; // Generate unique Order ID
-        
-        // Split name into first and last for Pesapal
+
+        const orderId = `EN-${Date.now()}`;
         const nameParts = name ? name.trim().split(' ') : ['Anonymous'];
         const firstName = nameParts[0];
-        // Fix: Pesapal requires a Last Name. If missing, reuse First Name or use 'Donor'.
         const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : firstName;
-        
+
         const orderData = {
             id: orderId,
-            currency: "KES",
+            currency: 'KES',
             amount: parseFloat(amount),
-            description: "Donation to Ereto Namunyak",
-            callback_url: `${baseUrl}/index.html?status=success`, // Redirect here after payment
+            description: 'Donation to Ereto Namunyak',
+            callback_url: `${baseUrl}/index.html?status=success`,
             notification_id: ipnId,
             billing_address: {
-                email_address: "donor@anonymous.com", // Placeholder since we didn't ask for email
-                phone_number: phone || "",
-                country_code: "KE",
+                email_address: 'donor@anonymous.com',
+                phone_number: phone || '',
+                country_code: 'KE',
                 first_name: firstName,
                 last_name: lastName,
-                line_1: "Donation",
-                city: "Nairobi",
-                state: "Nairobi",
-                postal_code: "00100",
-                zip_code: "00100"
+                line_1: 'Donation',
+                city: 'Nairobi',
+                state: 'Nairobi',
+                postal_code: '00100',
+                zip_code: '00100'
             }
         };
 
-        const response = await axios.post(`${PESAPAL_URL}/api/Transactions/SubmitOrderRequest`, orderData, {
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+        const response = await axios.post(
+            `${PESAPAL_URL}/api/Transactions/SubmitOrderRequest`,
+            orderData,
+            {
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                }
             }
-        });
+        );
 
-        res.json({ 
-            redirect_url: response.data.redirect_url, 
-            order_tracking_id: response.data.order_tracking_id 
+        res.json({
+            redirect_url: response.data.redirect_url,
+            order_tracking_id: response.data.order_tracking_id
         });
-
     } catch (error) {
-        console.error("Payment Creation Error:", error);
-        const msg = error.response?.data?.error?.message || error.response?.data?.message || error.message || "Unknown Error";
+        console.error('Payment Creation Error:', error);
+        const msg = error.response?.data?.error?.message || error.response?.data?.message || error.message || 'Unknown Error';
         res.status(500).json({ error: msg });
     }
 });
@@ -240,44 +281,38 @@ app.get('/api/payment-ipn', async (req, res) => {
     console.log(`IPN Received for Order: ${OrderMerchantReference}, Tracking ID: ${OrderTrackingId}`);
 
     try {
-        // 1. Get Access Token
         const token = await getPesapalToken();
-
-        // 2. Query Pesapal for the actual status
         const statusUrl = `${PESAPAL_URL}/api/Transactions/GetTransactionStatus?orderTrackingId=${OrderTrackingId}&orderMerchantReference=${OrderMerchantReference}`;
-        
+
         const response = await axios.get(statusUrl, {
-            headers: { 
-                'Accept': 'application/json', 
+            headers: {
+                Accept: 'application/json',
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}` 
+                Authorization: `Bearer ${token}`
             }
         });
 
         const { payment_status_description, amount, currency } = response.data;
-        console.log(`✅ Payment Status: ${payment_status_description} | Amount: ${currency} ${amount}`);
+        console.log(`Payment Status: ${payment_status_description} | Amount: ${currency} ${amount}`);
 
-        // OPTIONAL: Add code here to save to a database or send a "Thank You" email
-
+        // Optional: save to a database or send a thank-you email here.
     } catch (error) {
-        console.error("❌ Error verifying payment status:", error.message);
+        console.error('Error verifying payment status:', error.message);
     }
 
-    // 3. Acknowledge receipt to Pesapal
-    res.status(200).json({ 
-        orderNotificationType: "GET", 
-        orderTrackingId: OrderTrackingId, 
-        orderMerchantReference: OrderMerchantReference, 
-        status: 200 
+    res.status(200).json({
+        orderNotificationType: 'GET',
+        orderTrackingId: OrderTrackingId,
+        orderMerchantReference: OrderMerchantReference,
+        status: 200
     });
 });
 
-// Start Server
 if (require.main === module) {
     app.listen(PORT, () => {
         console.log(`\nLocal Server running at: http://localhost:${PORT}`);
         console.log(`Configured BASE_URL:   ${process.env.BASE_URL || '(Not Set)'}`);
-        console.log(`Note: This log only appears on your computer. On Vercel, the app runs in the cloud.\n`);
+        console.log('Note: This log only appears on your computer. On Vercel, the app runs in the cloud.\n');
     });
 }
 
