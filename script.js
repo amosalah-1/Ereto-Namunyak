@@ -66,34 +66,44 @@ window.addEventListener('scroll', () => {
     }
 });
 
-// EmailJS initialization and contact form handler
-(function(){
-    if (window.emailjs) {
-        emailjs.init('4mFlwg7HJxXVy7rrv');
-    } else {
-        console.warn('EmailJS SDK not loaded.');
-    }
-})();
-
+// Contact Form Handler (Connected to Backend)
 const contactForm = document.getElementById('contact-form');
 if (contactForm) {
     contactForm.addEventListener('submit', function(e){
         e.preventDefault();
+        
         const statusEl = document.getElementById('form-status');
         const submitBtn = contactForm.querySelector('button[type="submit"]');
+        
         if (submitBtn) submitBtn.disabled = true;
         if (statusEl) statusEl.textContent = 'Sending…';
 
-        emailjs.sendForm('service_9ookyda', 'template_5uvzm4q', this)
-            .then(() => {
+        // Collect form data
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+
+        // Send to Backend API
+        fetch('/api/contact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
                 if (statusEl) statusEl.textContent = 'Message sent — thank you!';
                 contactForm.reset();
-                if (submitBtn) submitBtn.disabled = false;
-            }, (err) => {
-                console.error('EmailJS error', err);
-                if (statusEl) statusEl.textContent = 'Sending failed. Please try again later.';
-                if (submitBtn) submitBtn.disabled = false;
-            });
+            } else {
+                throw new Error(result.message);
+            }
+        })
+        .catch(err => {
+            console.error('Contact Form Error:', err);
+            if (statusEl) statusEl.textContent = 'Sending failed. Please try again later.';
+        })
+        .finally(() => {
+            if (submitBtn) submitBtn.disabled = false;
+        });
     });
 }
 
@@ -164,3 +174,101 @@ if (backToTopBtn) {
         });
     });
 }
+
+// Donation Modal Interaction
+const donateBtn = document.getElementById('donate-btn-open');
+const donationModal = document.getElementById('donation-modal');
+const closeDonationModal = document.querySelector('.modal-close');
+
+if (donateBtn && donationModal && closeDonationModal) {
+    donateBtn.addEventListener('click', () => {
+        donationModal.classList.add('show');
+    });
+    closeDonationModal.addEventListener('click', () => {
+        donationModal.classList.remove('show');
+    });
+    donationModal.addEventListener('click', (e) => {
+        if (e.target === donationModal) donationModal.classList.remove('show');
+    });
+}
+
+// Donation Form Handler
+const donationForm = document.getElementById('donation-form');
+
+if (donationForm) {
+    donationForm.addEventListener('submit', (e) => {
+        e.preventDefault(); // Prevent actual form submission (page reload)
+
+        const amountInput = document.getElementById('donation-amount');
+        const nameInput = document.getElementById('donation-name');
+        const phoneInput = document.getElementById('donation-phone');
+        const statusDiv = document.getElementById('donation-status');
+        const submitBtn = donationForm.querySelector('.btn-submit-donation');
+        
+        const amount = amountInput.value;
+        const name = nameInput ? nameInput.value : 'Anonymous';
+        const phone = phoneInput ? phoneInput.value : '';
+
+        // Simple validation
+        if (!amount || amount < 50) {
+            if (statusDiv) {
+                statusDiv.textContent = "Please enter a valid amount (minimum 50 KES).";
+                statusDiv.style.color = "red";
+            }
+            return;
+        }
+
+        // Show processing state
+        if (submitBtn) submitBtn.disabled = true;
+        if (submitBtn) submitBtn.textContent = "Processing...";
+        if (statusDiv) statusDiv.textContent = "Initiating payment gateway...";
+        if (statusDiv) statusDiv.style.color = "inherit";
+
+        // This function sends the donation data to your backend server.
+        // The backend will then securely communicate with Pesapal.
+        // You must create this '/api/create-payment' endpoint on your server.
+        fetch('/api/create-payment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ amount: amount, name: name, phone: phone }),
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Payment initiation failed. Please try again.');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data && data.redirect_url) {
+                // If we get a redirect URL from the backend, send the user to Pesapal
+                window.location.href = data.redirect_url;
+            } else {
+                throw new Error('Could not retrieve payment link from the server.');
+            }
+        })
+        .catch(error => {
+            console.error('Payment Error:', error);
+            if (statusDiv) {
+                statusDiv.textContent = error.message || 'An unexpected error occurred.';
+                statusDiv.style.color = "red";
+            }
+            // Re-enable the button so the user can try again
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Proceed to Pesapal";
+            }
+        });
+    });
+}
+
+// Check for successful payment on page load (returning from Pesapal)
+window.addEventListener('load', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('status') === 'success') {
+        alert("Thank you! Your donation was initiated successfully.");
+        // Optional: clear the query parameter from the URL bar
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+});

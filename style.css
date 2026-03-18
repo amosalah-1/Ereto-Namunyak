@@ -586,6 +586,64 @@ span {
     font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Donation Modal */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 61, 98, 0.8);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10001;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px 40px;
+    border-radius: 16px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    max-width: 450px;
+    width: 90%;
+    position: relative;
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+    text-align: center;
+}
+
+.modal-overlay.show .modal-content {
+    transform: scale(1);
+}
+
+.modal-close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: var(--muted);
+    cursor: pointer;
+    line-height: 1;
+}
+
+.modal-content h3 { text-align: center; color: var(--primary); margin-top: 0; margin-bottom: 15px; }
+.modal-content p { text-align: center; color: var(--muted); margin-bottom: 25px; font-size: 0.95rem; }
+#donation-form .form-group { margin-bottom: 20px; text-align: left; }
+#donation-form label { display: block; font-weight: 600; color: var(--primary); margin-bottom: 8px; }
+#donation-form input { width: 100%; font-size: 1.1rem; }
+#donation-form .btn-submit-donation { width: 100%; background: var(--accent); color: #102a43; font-weight: 700; padding: 14px; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; }
+#donation-form .btn-submit-donation:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(246,185,59,0.3); }
+#donation-status { text-align: center; margin-top: 15px; font-weight: 500; font-size: 0.9rem; }
+
 /* small responsive tweaks */
 @media (max-width:720px){.hero{padding:48px 16px}.hero h1{font-size:1.8rem}.b1,.b2,.b3{display:none}}
 
