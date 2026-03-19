@@ -53,11 +53,20 @@ const PESAPAL_URL = 'https://pay.pesapal.com/v3';
 const PESAPAL_CONSUMER_KEY = process.env.PESAPAL_CONSUMER_KEY;
 const PESAPAL_CONSUMER_SECRET = process.env.PESAPAL_CONSUMER_SECRET;
 
+// In-memory cache for the Pesapal token
+let pesapalTokenCache = { token: null, expires_at: 0 };
+
 // Helper: Get Pesapal Auth Token
 async function getPesapalToken() {
     try {
         if (!PESAPAL_CONSUMER_KEY || !PESAPAL_CONSUMER_SECRET) {
             throw new Error('Missing Pesapal credentials. Check PESAPAL_CONSUMER_KEY and PESAPAL_CONSUMER_SECRET.');
+        }
+
+        // If we have a valid token in cache, return it
+        if (pesapalTokenCache.token && pesapalTokenCache.expires_at > Date.now()) {
+            console.log('Using cached Pesapal token.');
+            return pesapalTokenCache.token;
         }
 
         const response = await axios.post(
@@ -74,7 +83,14 @@ async function getPesapalToken() {
             }
         );
 
-        return response.data.token;
+        const tokenData = response.data;
+        // Pesapal tokens expire in 3600 seconds. We'll cache it for 55 minutes to be safe.
+        pesapalTokenCache = {
+            token: tokenData.token,
+            expires_at: Date.now() + (tokenData.expiryDate - 60000) // 1 minute buffer
+        };
+        console.log('Fetched and cached a new Pesapal token.');
+        return pesapalTokenCache.token;
     } catch (error) {
         console.error('Pesapal Auth Error:', error.response ? error.response.data : error.message);
         throw new Error('Failed to authenticate with Payment Gateway');
