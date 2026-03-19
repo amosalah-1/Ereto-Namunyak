@@ -853,6 +853,11 @@ span {
         flex-shrink: 0;
     }
 
+    /* Center single image in gallery */
+    .card-gallery > img:only-child {
+        margin: 0 auto;
+    }
+
     /* Form */
     form {
         gap: 12px;
