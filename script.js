@@ -240,12 +240,14 @@ if (donationForm) {
         const amountInput = document.getElementById('donation-amount');
         const nameInput = document.getElementById('donation-name');
         const phoneInput = document.getElementById('donation-phone');
+        const emailInput = document.getElementById('donation-email');
         const statusDiv = document.getElementById('donation-status');
         const submitBtn = donationForm.querySelector('.btn-submit-donation');
         
         const amount = amountInput.value;
         const name = nameInput ? nameInput.value : 'Anonymous';
         const phone = phoneInput ? phoneInput.value : '';
+        const email = emailInput ? emailInput.value : '';
 
         // Simple validation
         if (!amount || amount < 50) {
@@ -274,7 +276,7 @@ if (donationForm) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ amount: amount, name: name, phone: phone }),
+            body: JSON.stringify({ amount: amount, name: name, phone: phone, email: email }),
             signal: donationAbortController.signal
         })
         .then(async response => {

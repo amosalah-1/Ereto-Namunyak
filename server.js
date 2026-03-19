@@ -207,7 +207,7 @@ app.post('/api/contact', async (req, res) => {
 
 // 2. Create Payment Route
 app.post('/api/create-payment', async (req, res) => {
-    const { amount, name, phone } = req.body;
+    const { amount, name, phone, email } = req.body;
 
     if (!amount || Number.isNaN(Number(amount)) || Number(amount) < 1) {
         return res.status(400).json({ error: 'Invalid amount' });
@@ -239,7 +239,7 @@ app.post('/api/create-payment', async (req, res) => {
             callback_url: `${baseUrl}/index.html?status=success`,
             notification_id: ipnId,
             billing_address: {
-                email_address: 'donor@anonymous.com',
+                email_address: email || 'donor@anonymous.com',
                 phone_number: phone || '',
                 country_code: 'KE',
                 first_name: firstName,
