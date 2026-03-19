@@ -22,9 +22,12 @@ faders.forEach((el, i) => {
     el.style.setProperty('--delay', `${i * 0.12}s`);
 });
 
-const observer = new IntersectionObserver((entries) => {
+const observer = new IntersectionObserver((entries, observer) => {
     entries.forEach(entry => {
-        if (entry.isIntersecting) entry.target.classList.add('show');
+        if (entry.isIntersecting) {
+            entry.target.classList.add('show');
+            observer.unobserve(entry.target);
+        }
     });
 }, {threshold: 0.05});
 
@@ -195,6 +198,14 @@ if (menuToggle && navLinksContainer) {
         const isExpanded = navLinksContainer.classList.contains('active');
         menuToggle.setAttribute('aria-expanded', !isExpanded);
         navLinksContainer.classList.toggle('active');
+    });
+
+    // Close mobile menu when a link is clicked
+    navLinksContainer.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+            navLinksContainer.classList.remove('active');
+            menuToggle.setAttribute('aria-expanded', 'false');
+        });
     });
 }
 
