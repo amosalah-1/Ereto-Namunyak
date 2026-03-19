@@ -30,6 +30,24 @@ const observer = new IntersectionObserver((entries) => {
 
 faders.forEach(f => observer.observe(f));
 
+// Advanced Staggered Animation for Cards
+const projectCards = document.querySelectorAll('.card');
+const cardObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('show-stagger');
+            cardObserver.unobserve(entry.target); // Only animate once
+        }
+    });
+}, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+
+projectCards.forEach((card, index) => {
+    card.classList.add('hidden-stagger');
+    // Create a wave effect: delay depends on position in the grid (modulo 3 roughly approximates columns)
+    card.style.transitionDelay = `${(index % 3) * 0.15}s`;
+    cardObserver.observe(card);
+});
+
 // Simple typed text for hero tagline
 const typedEl = document.getElementById('typed');
 if (typedEl) {
@@ -63,6 +81,17 @@ window.addEventListener('scroll', () => {
             isScrolling = false;
         });
         isScrolling = true;
+    }
+});
+
+// Scroll Progress Bar Logic
+window.addEventListener('scroll', () => {
+    const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+    const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const scrolled = (scrollTop / scrollHeight) * 100;
+    const progressBar = document.getElementById('progress-bar');
+    if (progressBar) {
+        progressBar.style.width = scrolled + "%";
     }
 });
 
