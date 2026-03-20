@@ -2,6 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const nodemailer = require('nodemailer');
 const cors = require('cors');
+const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
 const app = express();
@@ -12,6 +13,9 @@ const REQUIRED_SMTP_VARS = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Serve static files (HTML, CSS, JS, Images) from the current folder
+app.use(express.static(__dirname));
 
 // Debug middleware for local and Vercel function logs
 app.use((req, res, next) => {
@@ -46,6 +50,30 @@ function formatMailError(error) {
     }
 
     return error.message || 'Failed to send email.';
+}
+
+// --- SUPABASE CONFIGURATION ---
+const supabaseUrl = getEnvValue('SUPABASE_URL');
+const supabaseKey = getEnvValue('SUPABASE_KEY');
+
+// Debug: Warn if specific keys are missing
+if (!supabaseUrl) console.warn('⚠️  Warning: SUPABASE_URL not found in .env file');
+if (!supabaseKey) console.warn('⚠️  Warning: SUPABASE_KEY not found in .env file');
+
+// Initialize Supabase client if keys are present
+const supabase = (supabaseUrl && supabaseKey) 
+    ? createClient(supabaseUrl, supabaseKey) 
+    : null;
+
+if (supabase) {
+    // Test the connection by running a lightweight query
+    supabase.from('members').select('id').limit(1)
+        .then(({ error }) => {
+            if (error) console.error('❌ Supabase Connection Failed:', error.message);
+            else console.log('✅ Supabase Connected: Ready to accept members.');
+        });
+} else {
+    console.log('⚠️ Supabase keys missing. The /api/join route will not save to database.');
 }
 
 // --- PESAPAL CONFIGURATION ---
@@ -221,7 +249,35 @@ app.post('/api/contact', async (req, res) => {
     }
 });
 
-// 2. Create Payment Route
+// 2. Join Us Route (Database Save)
+app.post('/api/join', async (req, res) => {
+    try {
+        const { name, email, phone, interest } = req.body;
+
+        if (!name || !email) {
+            return res.status(400).json({ success: false, message: 'Name and Email are required.' });
+        }
+
+        if (!supabase) {
+            console.error('Supabase keys missing.');
+            return res.status(500).json({ success: false, message: 'Database not configured.' });
+        }
+
+        // Insert data into 'members' table
+        const { error } = await supabase
+            .from('members')
+            .insert({ name, email, phone, interest });
+
+        if (error) throw error;
+
+        res.status(201).json({ success: true, message: 'Welcome to the family! We will contact you soon.' });
+    } catch (error) {
+        console.error('Supabase/Join Error:', error);
+        res.status(500).json({ success: false, message: 'Server error processing request.' });
+    }
+});
+
+// 3. Create Payment Route
 app.post('/api/create-payment', async (req, res) => {
     const { amount, name, phone, email } = req.body;
 

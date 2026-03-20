@@ -360,6 +360,46 @@ if (donationForm) {
     });
 }
 
+// Join Us Form Handler
+const joinForm = document.getElementById('join-form');
+if (joinForm) {
+    joinForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const statusEl = document.getElementById('join-status');
+        const btn = joinForm.querySelector('button');
+        const formData = new FormData(joinForm);
+        const data = Object.fromEntries(formData.entries());
+
+        if (btn) btn.disabled = true;
+        if (btn) btn.textContent = 'Joining...';
+        if (statusEl) statusEl.textContent = '';
+
+        try {
+            const response = await fetch('/api/join', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            if (result.success) {
+                if (statusEl) statusEl.textContent = result.message;
+                statusEl.style.color = "green";
+                joinForm.reset();
+            } else {
+                if (statusEl) statusEl.textContent = result.message || 'Error joining.';
+                statusEl.style.color = "red";
+            }
+        } catch (err) {
+            console.error(err);
+            if (statusEl) statusEl.textContent = 'Network error. Please try again.';
+        } finally {
+            if (btn) btn.disabled = false;
+            if (btn) btn.textContent = 'Join Our Community';
+        }
+    });
+}
+
 // Check for successful payment on page load (returning from Pesapal)
 window.addEventListener('load', () => {
     const urlParams = new URLSearchParams(window.location.search);
