@@ -295,8 +295,12 @@ app.post('/api/join', async (req, res) => {
                 html: `<h3>Welcome, ${name}!</h3><p>Welcome to <strong>Ereto Namunyak Community Based Organization</strong>. You are now a member of the organization.</p><p>We are thrilled to have you with us.</p><br><p>Best Regards,<br>The Ereto Namunyak Team</p>`
             };
 
-            // Send email but don't block the response if it fails
-            transporter.sendMail(mailOptions).catch(err => console.error('Failed to send welcome email:', err.message));
+            // VERCEL FIX: We must await the email, otherwise the serverless function pauses immediately.
+            try {
+                await transporter.sendMail(mailOptions);
+            } catch (emailError) {
+                console.error('Failed to send welcome email:', emailError.message);
+            }
         }
 
         res.status(201).json({ success: true, message: 'Welcome to Ereto Namunyak Community Based Organization, You are now a member of the organization' });
