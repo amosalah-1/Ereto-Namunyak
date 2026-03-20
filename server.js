@@ -270,7 +270,36 @@ app.post('/api/join', async (req, res) => {
 
         if (error) throw error;
 
-        res.status(201).json({ success: true, message: 'Welcome to the family! We will contact you soon.' });
+        // --- Send Welcome Email ---
+        // We reuse the SMTP settings to send a confirmation to the user
+        const smtpHost = getEnvValue('SMTP_HOST');
+        const smtpUser = getEnvValue('SMTP_USER');
+        const cleanPass = getEnvValue('SMTP_PASS').replace(/\s+/g, '');
+        const smtpPort = parseInt(getEnvValue('SMTP_PORT'), 10) || 465;
+
+        if (smtpHost && smtpUser && cleanPass) {
+            const transporter = nodemailer.createTransport({
+                host: smtpHost,
+                port: smtpPort,
+                secure: smtpPort === 465,
+                requireTLS: smtpPort === 587,
+                auth: { user: smtpUser, pass: cleanPass },
+                tls: { rejectUnauthorized: false }
+            });
+
+            const mailOptions = {
+                from: { name: 'Ereto Namunyak', address: smtpUser },
+                to: email,
+                subject: 'Welcome to Ereto Namunyak!',
+                text: `Hello ${name},\n\nThank you for joining Ereto Namunyak. We are thrilled to welcome you to our Organization.\n\nWe will be in touch shortly with more information.\n\nBest Regards,\nThe Ereto Namunyak Team`,
+                html: `<h3>Welcome, ${name}!</h3><p>Thank you for becoming a member of <strong>Ereto Namunyak</strong>. We are thrilled to have you with us.</p><p>We will be in touch shortly regarding next steps.</p><br><p>Best Regards,<br>The Ereto Namunyak Team</p>`
+            };
+
+            // Send email but don't block the response if it fails
+            transporter.sendMail(mailOptions).catch(err => console.error('Failed to send welcome email:', err.message));
+        }
+
+        res.status(201).json({ success: true, message: 'Welcome to the family! A confirmation email has been sent.' });
     } catch (error) {
         console.error('Supabase/Join Error:', error);
         res.status(500).json({ success: false, message: 'Server error processing request.' });

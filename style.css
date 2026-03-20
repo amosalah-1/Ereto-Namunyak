@@ -1054,3 +1054,11 @@ span {
         font-size: 0.95rem;
     }
 }
+
+/* Join Page Specifics */
+.join-page-body {
+    padding-top: 80px; /* Space for fixed nav */
+}
+.join-page-body .join-container {
+    margin-top: 50px;
+}
