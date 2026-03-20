@@ -93,7 +93,7 @@
             <a href="#projects">Projects</a>
             <a href="#team">Our Team</a>
             <a href="#contact">Contact</a>
-            <a href="Join.html">Join Us</a>
+            <a href="#join-form">Join Us</a>
         </div>
     </nav>
 
@@ -273,20 +273,29 @@
     </section>
 
     <!-- Join Us Section -->
-    <section id="join" class="fade-in">
-        <h2>Join Us</h2>
-        <p>Become a part of our growing community. Whether you want to volunteer, partner with us, or become a member, we welcome you.</p>
+      <section class="join-container fade-in show">
+        <h2>Become a Member</h2>
+        <p>Join Ereto Namunyak community Based Organization. Please fill out your details below.</p>
+        
+        <!-- The ID 'join-form' connects this to the logic in script.js -->
         <form id="join-form">
             <div class="form-group">
-                <input name="name" type="text" placeholder="Full Name" required>
+                <label for="name" style="text-align:left; display:block; color:var(--primary); margin-bottom:5px; font-weight:600;">Full Name</label>
+                <input name="name" id="name" type="text" placeholder="e.g. Amos Tentemo" required>
             </div>
+            
             <div class="form-group">
-                <input name="email" type="email" placeholder="Email Address" required>
+                <label for="email" style="text-align:left; display:block; color:var(--primary); margin-bottom:5px; font-weight:600;">Email Address</label>
+                <input name="email" id="email" type="email" placeholder="e.g. name@example.com" required>
             </div>
-            <input name="phone" type="tel" placeholder="Phone Number (Optional)">
-            <textarea name="interest" placeholder="How would you like to get involved? (e.g., Volunteer, Membership)" rows="3"></textarea>
-            <button type="submit">Join Our Community</button>
-            <div id="join-status" aria-live="polite"></div>
+            
+            <div class="form-group">
+                <label for="phone" style="text-align:left; display:block; color:var(--primary); margin-bottom:5px; font-weight:600;">Phone Number</label>
+                <input name="phone" id="phone" type="tel" placeholder="e.g. 0769599129" required>
+            </div>
+
+            <button type="submit">Submit Registration</button>
+            <div id="join-status" aria-live="polite" style="margin-top: 15px;"></div>
         </form>
     </section>
 
