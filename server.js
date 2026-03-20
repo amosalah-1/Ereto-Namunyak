@@ -290,16 +290,16 @@ app.post('/api/join', async (req, res) => {
             const mailOptions = {
                 from: { name: 'Ereto Namunyak', address: smtpUser },
                 to: email,
-                subject: 'Welcome to Ereto Namunyak!',
-                text: `Hello ${name},\n\nThank you for joining Ereto Namunyak. We are thrilled to welcome you to our Organization.\n\nWe will be in touch shortly with more information.\n\nBest Regards,\nThe Ereto Namunyak Team`,
-                html: `<h3>Welcome, ${name}!</h3><p>Thank you for becoming a member of <strong>Ereto Namunyak</strong>. We are thrilled to have you with us.</p><p>We will be in touch shortly regarding next steps.</p><br><p>Best Regards,<br>The Ereto Namunyak Team</p>`
+                subject: 'Welcome to Ereto Namunyak Community Based Organization',
+                text: `Hello ${name},\n\nWelcome to Ereto Namunyak Community Based Organization. You are now a member of the organization.\n\nWe are thrilled to have you with us.\n\nBest Regards,\nThe Ereto Namunyak Team`,
+                html: `<h3>Welcome, ${name}!</h3><p>Welcome to <strong>Ereto Namunyak Community Based Organization</strong>. You are now a member of the organization.</p><p>We are thrilled to have you with us.</p><br><p>Best Regards,<br>The Ereto Namunyak Team</p>`
             };
 
             // Send email but don't block the response if it fails
             transporter.sendMail(mailOptions).catch(err => console.error('Failed to send welcome email:', err.message));
         }
 
-        res.status(201).json({ success: true, message: 'Welcome to the family! A confirmation email has been sent.' });
+        res.status(201).json({ success: true, message: 'Welcome to Ereto Namunyak Community Based Organization, You are now a member of the organization' });
     } catch (error) {
         console.error('Supabase/Join Error:', error);
         res.status(500).json({ success: false, message: 'Server error processing request.' });
