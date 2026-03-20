@@ -303,7 +303,7 @@ app.post('/api/join', async (req, res) => {
             }
         }
 
-        res.status(201).json({ success: true, message: 'Welcome to Ereto Namunyak Community Based Organization, You are now a member of the organization' });
+        res.status(201).json({ success: true, message: 'Welcome to the Organization, A confirmation email has been sent' });
     } catch (error) {
         console.error('Supabase/Join Error:', error);
         res.status(500).json({ success: false, message: 'Server error processing request.' });
