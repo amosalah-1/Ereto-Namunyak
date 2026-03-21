@@ -1115,3 +1115,103 @@ span {
         font-size: 0.95rem;
     }
 }
+
+/* Timeline Section */
+.timeline {
+    position: relative;
+    max-width: 800px;
+    margin: 30px auto 0;
+    padding-left: 30px;
+}
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background: rgba(30, 55, 153, 0.2);
+    border-radius: 4px;
+}
+.timeline-item {
+    position: relative;
+    margin-bottom: 40px;
+}
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -38px; /* Adjust based on padding-left of parent */
+    top: 5px;
+    width: 20px;
+    height: 20px;
+    background: var(--accent);
+    border: 4px solid white;
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px rgba(246, 185, 59, 0.3);
+    z-index: 1;
+}
+.timeline-date {
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--primary);
+    margin-bottom: 5px;
+    text-align: left;
+}
+.timeline-content h3 {
+    margin-bottom: 5px;
+    font-size: 1.1rem;
+    color: #102a43;
+    text-align: left;
+}
+.timeline-content p {
+    text-align: left;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+/* Newsletter Section */
+.newsletter-section {
+    background: linear-gradient(135deg, var(--primary), var(--primary-2));
+    color: white;
+    padding: 40px 20px;
+    margin-bottom: 0; /* Attach closely to social/footer */
+}
+.newsletter-section h2 {
+    color: white; /* Override default section h2 color */
+    background: none;
+    -webkit-text-fill-color: initial;
+    margin-bottom: 10px;
+}
+.newsletter-section p {
+    color: rgba(255,255,255,0.9);
+    margin-bottom: 20px;
+}
+#newsletter-form {
+    flex-direction: row;
+    justify-content: center;
+    max-width: 500px;
+    margin: 0 auto;
+    gap: 10px;
+}
+#newsletter-form input {
+    flex: 1;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 20px;
+}
+#newsletter-form button {
+    background: var(--accent);
+    color: var(--primary);
+    font-weight: 700;
+    border-radius: 50px;
+    padding: 12px 28px;
+    white-space: nowrap;
+}
+@media (max-width: 480px) {
+    #newsletter-form {
+        flex-direction: column;
+    }
+    #newsletter-form button {
+        width: 100%;
+    }
+}

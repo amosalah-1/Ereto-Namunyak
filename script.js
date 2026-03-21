@@ -432,3 +432,49 @@ if (lightbox && lightboxImg && galleryImages.length > 0) {
         if (e.target === lightbox) closeLightbox();
     });
 }
+
+// Newsletter Form Handler (Frontend Only Simulation)
+const newsletterForm = document.getElementById('newsletter-form');
+if (newsletterForm) {
+    newsletterForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = newsletterForm.querySelector('button');
+        const emailInput = newsletterForm.querySelector('input[type="email"]');
+        const email = emailInput ? emailInput.value : '';
+        const originalText = btn.textContent;
+        
+        if (!email) return;
+
+        btn.textContent = 'Subscribing...';
+        btn.disabled = true;
+        
+        try {
+            const response = await fetch('/api/subscribe', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+            const result = await response.json();
+
+            if (result.success) {
+                btn.textContent = 'Subscribed!';
+                btn.style.backgroundColor = '#27ae60'; // Green color
+                alert(result.message);
+                newsletterForm.reset();
+            } else {
+                throw new Error(result.message || 'Subscription failed.');
+            }
+        } catch (err) {
+            console.error(err);
+            alert(err.message || 'An error occurred. Please try again.');
+            btn.textContent = 'Retry';
+            btn.style.backgroundColor = '#c0392b'; // Red
+        }
+        
+        setTimeout(() => {
+            btn.textContent = originalText;
+            btn.disabled = false;
+            btn.style.backgroundColor = '';
+        }, 3000);
+    });
+}

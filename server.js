@@ -311,6 +311,55 @@ app.post('/api/join', async (req, res) => {
     }
 });
 
+// 3. Newsletter Subscription Route
+app.post('/api/subscribe', async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) return res.status(400).json({ success: false, message: 'Email is required.' });
+
+        // 1. Save to Supabase
+        if (supabase) {
+            const { error } = await supabase.from('subscribers').insert({ email });
+            // Handle duplicate email error (Postgres code 23505)
+            if (error) {
+                if (error.code === '23505') {
+                    return res.status(400).json({ success: false, message: 'You are already subscribed.' });
+                }
+                throw error;
+            }
+            console.log(`[SQL Success] New subscriber added: ${email}`);
+        }
+
+        // 2. Send Confirmation Email via Nodemailer
+        const smtpHost = getEnvValue('SMTP_HOST');
+        const smtpUser = getEnvValue('SMTP_USER');
+        const cleanPass = getEnvValue('SMTP_PASS').replace(/\s+/g, '');
+        const smtpPort = parseInt(getEnvValue('SMTP_PORT'), 10) || 465;
+
+        if (smtpHost && smtpUser && cleanPass) {
+            const transporter = nodemailer.createTransport({
+                host: smtpHost, port: smtpPort, secure: smtpPort === 465,
+                auth: { user: smtpUser, pass: cleanPass }, tls: { rejectUnauthorized: false }
+            });
+
+            // We don't await this so the UI response is faster
+            transporter.sendMail({
+                from: { name: 'Ereto Namunyak', address: smtpUser },
+                to: email,
+                subject: 'Newsletter Subscription Confirmed',
+                text: 'Thank you for subscribing to the Ereto Namunyak newsletter. We will keep you updated on our latest projects.',
+                html: '<h3>Subscription Confirmed</h3><p>Thank you for subscribing to the <strong>Ereto Namunyak</strong> newsletter. We will keep you updated on our latest projects.</p>'
+            }).catch(e => console.error('Newsletter email failed:', e.message));
+        }
+
+        res.status(200).json({ success: true, message: 'Thank you! Your email has been saved to our database.' });
+    } catch (error) {
+        console.error('Subscription Error:', error);
+        res.status(500).json({ success: false, message: 'Server error. Please try again later.' });
+    }
+});
+
 // 3. Create Payment Route
 app.post('/api/create-payment', async (req, res) => {
     const { amount, name, phone, email } = req.body;
