@@ -62,6 +62,12 @@
         <div class="spinner"></div>
     </div>
 
+    <!-- Image Lightbox -->
+    <div id="lightbox" class="lightbox">
+        <span class="lightbox-close">&times;</span>
+        <img class="lightbox-content" id="lightbox-img" alt="Enlarged view">
+    </div>
+
     <!-- Donation Modal -->
     <div id="donation-modal" class="modal-overlay">
         <div class="modal-content">
@@ -322,14 +328,20 @@
 
     <section id="contact" class="fade-in">
         <h2>Contact Us</h2>
-        <!-- Contact form (posts to backend) -->
-        <form id="contact-form">
-            <input name="from_name" type="text" placeholder="Your Name" required>
-            <input name="from_email" type="email" placeholder="Your Email" required>
-            <textarea name="message" placeholder="Your Message" required></textarea>
-            <button type="submit">Send Message</button>
-            <div id="form-status" aria-live="polite"></div>
-        </form>
+        <div class="contact-container">
+            <!-- Contact form (posts to backend) -->
+            <form id="contact-form">
+                <input name="from_name" type="text" placeholder="Your Name" required>
+                <input name="from_email" type="email" placeholder="Your Email" required>
+                <textarea name="message" placeholder="Your Message" required></textarea>
+                <button type="submit">Send Message</button>
+                <div id="form-status" aria-live="polite"></div>
+            </form>
+            <!-- Google Map Embed for Magadi -->
+            <div class="map-container">
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d127504.60464731326!2d36.19584400511855!3d-1.886463999999992!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x182f76b539820f4d%3A0x673194098436060c!2sMagadi!5e0!3m2!1sen!2ske!4v1709230000000!5m2!1sen!2ske" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Map of Magadi"></iframe>
+            </div>
+        </div>
     </section>
 
     <!-- Social Media -->
@@ -372,6 +384,9 @@
                 Magadi, Kenya
             </p>
         </div>
+        <div class="footer-legal">
+            <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a>
+        </div>
     </footer>
 
     <!-- Back to Top Button -->
@@ -379,8 +394,6 @@
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
     </button>
 
-    <!-- EmailJS SDK (client-side) -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

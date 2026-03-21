@@ -409,3 +409,26 @@ window.addEventListener('load', () => {
         window.history.replaceState({}, document.title, window.location.pathname);
     }
 });
+
+// Lightbox Logic
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightbox-img');
+const lightboxClose = document.querySelector('.lightbox-close');
+const galleryImages = document.querySelectorAll('.card-gallery img');
+
+if (lightbox && lightboxImg && galleryImages.length > 0) {
+    galleryImages.forEach(img => {
+        img.addEventListener('click', () => {
+            lightbox.style.display = "flex";
+            lightboxImg.src = img.src;
+            lightboxImg.alt = img.alt;
+        });
+    });
+
+    const closeLightbox = () => lightbox.style.display = "none";
+    
+    if (lightboxClose) lightboxClose.addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', (e) => {
+        if (e.target === lightbox) closeLightbox();
+    });
+}

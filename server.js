@@ -112,10 +112,11 @@ async function getPesapalToken() {
         );
 
         const tokenData = response.data;
-        // Pesapal tokens expire in 3600 seconds. We'll cache it for 55 minutes to be safe.
+        // Pesapal returns an expiryDate string. We convert it to a timestamp.
+        const expiryTime = new Date(tokenData.expiryDate).getTime();
         pesapalTokenCache = {
             token: tokenData.token,
-            expires_at: Date.now() + (tokenData.expiryDate - 60000) // 1 minute buffer
+            expires_at: isNaN(expiryTime) ? Date.now() + 3500 * 1000 : expiryTime
         };
         console.log('Fetched and cached a new Pesapal token.');
         return pesapalTokenCache.token;
@@ -252,7 +253,7 @@ app.post('/api/contact', async (req, res) => {
 // 2. Join Us Route (Database Save)
 app.post('/api/join', async (req, res) => {
     try {
-        const { name, email, phone, interest } = req.body;
+        const { name, email, phone } = req.body;
 
         if (!name || !email) {
             return res.status(400).json({ success: false, message: 'Name and Email are required.' });
@@ -266,7 +267,7 @@ app.post('/api/join', async (req, res) => {
         // Insert data into 'members' table
         const { error } = await supabase
             .from('members')
-            .insert({ name, email, phone, interest });
+            .insert({ name, email, phone });
 
         if (error) throw error;
 
