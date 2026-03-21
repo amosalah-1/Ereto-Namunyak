@@ -163,7 +163,7 @@ body{
     position:relative;
     overflow:hidden;
     /* background image + semi-opaque gradient for legible text */
-    background: linear-gradient(120deg, rgba(10,61,98,0.65), rgba(60,99,130,0.55)), url('images/Screenshot_20251221-231019.jpg') center/cover no-repeat;
+    background: linear-gradient(120deg, rgba(10,61,98,0.65), rgba(60,99,130,0.55)), url('images/ereto-logo.jpg') center/cover no-repeat;
     color:white;
     padding:80px 20px;
     display:flex;
