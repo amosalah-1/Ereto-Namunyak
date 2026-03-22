@@ -363,7 +363,7 @@ app.post('/api/subscribe', async (req, res) => {
 // 3. Create Payment Route
 app.post('/api/create-payment', async (req, res) => {
     const { amount, name, phone, email } = req.body;
-
+    
     if (!amount || Number.isNaN(Number(amount)) || Number(amount) < 1) {
         return res.status(400).json({ error: 'Invalid amount' });
     }
@@ -407,6 +407,19 @@ app.post('/api/create-payment', async (req, res) => {
             }
         };
 
+        // --- SAVE TO DATABASE (PENDING) ---
+        if (supabase) {
+            const { error } = await supabase.from('donations').insert({
+                merchant_reference: orderId,
+                name: name || 'Anonymous',
+                email: email,
+                phone: phone,
+                amount: parseFloat(amount),
+                status: 'PENDING'
+            });
+            if (error) console.error('Failed to save donation record:', error.message);
+        }
+
         const response = await axios.post(
             `${PESAPAL_URL}/api/Transactions/SubmitOrderRequest`,
             orderData,
@@ -418,6 +431,13 @@ app.post('/api/create-payment', async (req, res) => {
                 }
             }
         );
+
+        // --- UPDATE DATABASE WITH TRACKING ID ---
+        if (supabase && response.data.order_tracking_id) {
+            await supabase.from('donations')
+                .update({ order_tracking_id: response.data.order_tracking_id })
+                .eq('merchant_reference', orderId);
+        }
 
         res.json({
             redirect_url: response.data.redirect_url,
@@ -450,7 +470,12 @@ app.get('/api/payment-ipn', async (req, res) => {
         const { payment_status_description, amount, currency } = response.data;
         console.log(`Payment Status: ${payment_status_description} | Amount: ${currency} ${amount}`);
 
-        // Optional: save to a database or send a thank-you email here.
+        // --- UPDATE DATABASE STATUS ---
+        if (supabase) {
+            await supabase.from('donations')
+                .update({ status: payment_status_description })
+                .eq('order_tracking_id', OrderTrackingId);
+        }
     } catch (error) {
         console.error('Error verifying payment status:', error.message);
     }
