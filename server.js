@@ -264,12 +264,31 @@ app.post('/api/join', async (req, res) => {
             return res.status(500).json({ success: false, message: 'Database not configured.' });
         }
 
+        // Check if member already exists with same email or phone
+        const { data: existingMembers, error: checkError } = await supabase
+            .from('members')
+            .select('id')
+            .or(`email.eq."${email}",phone.eq."${phone}"`)
+            .limit(1);
+
+        if (checkError) throw checkError;
+
+        if (existingMembers && existingMembers.length > 0) {
+            return res.status(400).json({ success: false, message: 'You Are Already a Member' });
+        }
+
         // Insert data into 'members' table
         const { error } = await supabase
             .from('members')
             .insert({ name, email, phone });
 
-        if (error) throw error;
+        if (error) {
+            // Handle duplicate entry (Postgres code 23505) if race condition occurs
+            if (error.code === '23505') {
+                return res.status(400).json({ success: false, message: 'You Are Already a Member' });
+            }
+            throw error;
+        }
 
         // --- Send Welcome Email ---
         // We reuse the SMTP settings to send a confirmation to the user
@@ -307,7 +326,7 @@ app.post('/api/join', async (req, res) => {
         res.status(201).json({ success: true, message: 'Welcome to the Organization, A confirmation email has been sent' });
     } catch (error) {
         console.error('Supabase/Join Error:', error);
-        res.status(500).json({ success: false, message: 'Server error processing request.' });
+        res.status(500).json({ success: false, message: error.message || 'Server error processing request.' });
     }
 });
 

@@ -445,6 +445,27 @@ section h2{
     font-weight: 500;
 }
 
+.about-me-btn {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 8px 24px;
+    background-color: var(--primary);
+    color: white;
+    text-decoration: none;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(10, 61, 98, 0.1);
+}
+
+.about-me-btn:hover {
+    background-color: var(--accent);
+    color: var(--primary);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(246, 185, 59, 0.4);
+}
+
 /* Form */
 form{display:flex;flex-direction:column;gap:15px}
 input,textarea{padding:12px;border-radius:8px;border:1px solid rgba(15,23,42,.08);background:white;transition:box-shadow .18s,border-color .18s}
