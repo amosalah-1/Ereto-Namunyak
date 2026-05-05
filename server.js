@@ -478,7 +478,7 @@ app.post('/api/create-payment', async (req, res) => {
     }
 });
 
-// 3. IPN Callback Route (Called by Pesapal server)
+// 4. IPN Callback Route (Called by Pesapal server)
 app.get('/api/payment-ipn', async (req, res) => {
     const { OrderTrackingId, OrderMerchantReference } = req.query;
     console.log(`IPN Received for Order: ${OrderMerchantReference}, Tracking ID: ${OrderTrackingId}`);
@@ -507,14 +507,15 @@ app.get('/api/payment-ipn', async (req, res) => {
     } catch (error) {
         console.error('Error verifying payment status:', error.message);
     }
-});
 
+    // Pesapal requires a 200 JSON response to confirm IPN receipt
     res.status(200).json({
         orderNotificationType: 'GET',
         orderTrackingId: OrderTrackingId,
         orderMerchantReference: OrderMerchantReference,
         status: 200
     });
+});
 
 if (require.main === module) {
     app.listen(PORT, () => {

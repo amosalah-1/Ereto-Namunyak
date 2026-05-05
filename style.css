@@ -390,6 +390,14 @@ section h2{
     margin-bottom: 5px;
 }
 
+.faq-icon {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--accent);
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+}
+
 /* FAQ Section */
 .faq-container {
     max-width: 800px;
@@ -756,11 +764,16 @@ li{
     transform: scale(1.03);
 }
 
-/* Ideally replace 'span' with a class like .text-highlight in your HTML */
-span {
-    color: orange;
+/* Hero highlight span - scoped to hero h1 to avoid styling all spans */
+.hero h1 span {
+    color: var(--accent);
     font-weight: bolder;
-    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Typed text in hero tagline should remain white */
+.hero .tagline #typed {
+    color: var(--accent);
+    font-weight: 700;
 }
 
 /* Donation Modal */
@@ -1236,6 +1249,11 @@ span {
     padding: 40px 20px;
     margin-bottom: 0; /* Attach closely to social/footer */
 }
+.newsletter-content {
+    max-width: 700px;
+    margin: 0 auto;
+    text-align: center;
+}
 .newsletter-section h2 {
     color: white; /* Override default section h2 color */
     background: none;
@@ -1247,6 +1265,7 @@ span {
     margin-bottom: 20px;
 }
 #newsletter-form {
+    display: flex;
     flex-direction: row;
     justify-content: center;
     max-width: 500px;
