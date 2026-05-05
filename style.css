@@ -390,6 +390,45 @@ section h2{
     margin-bottom: 5px;
 }
 
+/* FAQ Section */
+.faq-container {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: left;
+}
+.faq-item {
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    margin-bottom: 10px;
+}
+.faq-question {
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 15px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    color: var(--primary);
+    cursor: pointer;
+    text-align: left;
+    font-size: 1.1rem;
+    transition: color 0.3s;
+}
+.faq-question:hover {
+    color: var(--accent);
+    transform: none;
+    box-shadow: none;
+}
+.faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+.faq-answer p {
+    padding-bottom: 15px;
+}
+
 /* Team Section */
 .team-grid {
     display: grid;

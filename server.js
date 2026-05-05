@@ -40,6 +40,7 @@ function getRuntimeLabel() {
     return getEnvValue('VERCEL_ENV') || getEnvValue('NODE_ENV') || 'local';
 }
 
+//TO BE REMOVED
 function formatMailError(error) {
     if (error.code === 'EAUTH') {
         return 'SMTP authentication failed. Check SMTP_USER and SMTP_PASS in Vercel.';
@@ -56,7 +57,7 @@ function formatMailError(error) {
 const supabaseUrl = getEnvValue('SUPABASE_URL');
 const supabaseKey = getEnvValue('SUPABASE_KEY');
 
-// Debug: Warn if specific keys are missing
+// Debug: Warn if specific keys are missing(TO BE REMOVED)
 if (!supabaseUrl) console.warn('⚠️  Warning: SUPABASE_URL not found in .env file');
 if (!supabaseKey) console.warn('⚠️  Warning: SUPABASE_KEY not found in .env file');
 
@@ -69,8 +70,16 @@ if (supabase) {
     // Test the connection by running a lightweight query
     supabase.from('members').select('id').limit(1)
         .then(({ error }) => {
-            if (error) console.error('❌ Supabase Connection Failed:', error.message);
-            else console.log('✅ Supabase Connected: Ready to accept members.');
+            if (error) {
+                console.error('❌ Supabase Connection Failed:', error.message);
+            } else {
+                // Determine if we are using service_role or anon by testing a hypothetical admin-only check
+                // or just log based on the key prefix if available.
+                const isServiceKey = supabaseKey.length > 200; // Service keys are typically longer JWTs
+                console.log(`✅ Supabase Connected: Using ${isServiceKey ? 'service_role' : 'anon'} key.`);
+                console.log('Ready to accept members.');
+                console.log(`✅ Supabase Connected: Ready to accept members (using ${isServiceKey ? 'service_role' : 'anon'} key).`);
+            }
         });
 } else {
     console.log('⚠️ Supabase keys missing. The /api/join route will not save to database.');
@@ -268,7 +277,7 @@ app.post('/api/join', async (req, res) => {
         const { data: existingMembers, error: checkError } = await supabase
             .from('members')
             .select('id')
-            .or(`email.eq."${email}",phone.eq."${phone}"`)
+            .or(`email.eq.${email},phone.eq.${phone}`)
             .limit(1);
 
         if (checkError) throw checkError;
@@ -498,6 +507,7 @@ app.get('/api/payment-ipn', async (req, res) => {
     } catch (error) {
         console.error('Error verifying payment status:', error.message);
     }
+});
 
     res.status(200).json({
         orderNotificationType: 'GET',
@@ -505,7 +515,6 @@ app.get('/api/payment-ipn', async (req, res) => {
         orderMerchantReference: OrderMerchantReference,
         status: 200
     });
-});
 
 if (require.main === module) {
     app.listen(PORT, () => {

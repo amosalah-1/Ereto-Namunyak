@@ -395,7 +395,7 @@ if (joinForm) {
             if (statusEl) statusEl.textContent = 'Network error. Please try again.';
         } finally {
             if (btn) btn.disabled = false;
-            if (btn) btn.textContent = 'Join Our Community';
+            if (btn) btn.textContent = 'Submit Registration';
         }
     });
 }
@@ -478,3 +478,24 @@ if (newsletterForm) {
         }, 3000);
     });
 }
+
+// FAQ Accordion Logic
+const faqQuestions = document.querySelectorAll('.faq-question');
+faqQuestions.forEach(question => {
+    question.addEventListener('click', () => {
+        const answer = question.nextElementSibling;
+        const icon = question.querySelector('.faq-icon');
+        
+        // Close other FAQs
+        document.querySelectorAll('.faq-answer').forEach(el => {
+            if (el !== answer) {
+                el.style.maxHeight = null;
+                el.previousElementSibling.querySelector('.faq-icon').textContent = '+';
+            }
+        });
+
+        const isOpen = answer.style.maxHeight;
+        answer.style.maxHeight = isOpen ? null : answer.scrollHeight + "px";
+        icon.textContent = isOpen ? '+' : '−';
+    });
+});

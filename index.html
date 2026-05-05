@@ -11,7 +11,7 @@
     <link rel="canonical" href="https://ereto-namunyak.vercel.app/">
     <meta property="og:title" content="Ereto Namunyak Organization">
     <meta property="og:description" content="Empowering the Maa community through education, health, and sustainable development.">
-    <meta property="og:image" content="images/ereto-logo.jpg">
+    <meta property="og:image" content="https://ereto-namunyak.vercel.app/images/ereto-logo.jpg">
     <meta property="og:type" content="website">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
@@ -77,19 +77,19 @@
             <form id="donation-form">
                 <div class="form-group">
                     <label for="donation-name">Full Name</label>
-                    <input type="text" id="donation-name" name="name" placeholder="Amos Tentemo" required>
+                    <input type="text" id="donation-name" name="name" placeholder="Your Name" required>
                 </div>
                 <div class="form-group">
                     <label for="donation-phone">Phone Number</label>
-                    <input type="tel" id="donation-phone" name="phone" placeholder="0769599129" required>
+                    <input type="tel" id="donation-phone" name="phone" placeholder="Tel" required>
                 </div>
                 <div class="form-group">
                     <label for="donation-email">Email</label>
-                    <input type="email" id="donation-email" name="email" placeholder="tentemo@example.com (Optional)">
+                    <input type="email" id="donation-email" name="email" placeholder="Your Email(Optional)">
                 </div>
                 <div class="form-group">
                     <label for="donation-amount">Amount (KES)</label>
-                    <input type="number" id="donation-amount" name="amount" placeholder="e.g., 1000" min="50" required>
+                    <input type="number" id="donation-amount" name="amount" placeholder="Amount" min="50" required>
                 </div>
                 <button type="submit" class="btn-submit-donation">Proceed to Pesapal</button>
                 <div id="donation-status" aria-live="polite"></div>
@@ -119,6 +119,7 @@
             <a href="#about">About</a>
             <a href="#mission">Mission</a>
             <a href="#projects">Projects</a>
+            <a href="#faq">FAQ</a>
             <a href="#team">Our Team</a>
             <a href="#join">Join Now</a>
             <a href="#contact">Contact</a>
@@ -157,7 +158,7 @@
                 <div class="timeline-date">Future</div>
                 <div class="timeline-content">
                     <h3>Vision 2030</h3>
-                    <p>Expanding our reach to eliminate illiteracy and poverty across magadi and it's environs, ensuring every community member has a role to play.</p>
+                    <p>Expanding our reach to eliminate illiteracy and poverty across Magadi and it's environs, ensuring every community member has a role to play.</p>
                 </div>
             </div>
         </div>
@@ -281,6 +282,31 @@
         </div>
     </section>
 
+    <!-- FAQ Section -->
+    <section id="faq" class="fade-in">
+        <h2>Frequently Asked Questions</h2>
+        <div class="faq-container">
+            <div class="faq-item">
+                <button class="faq-question">How can I become a member? <span class="faq-icon">+</span></button>
+                <div class="faq-answer">
+                    <p>You can join by filling out the registration form in the <a href="#join">Join Us</a> section. Our team will review your details and send a confirmation email.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">Are donations secure? <span class="faq-icon">+</span></button>
+                <div class="faq-answer">
+                    <p>Yes, all donations are processed securely through Pesapal, a leading payment gateway in Africa. We do not store your credit card details.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">Where does the funding go? <span class="faq-icon">+</span></button>
+                <div class="faq-answer">
+                    <p>Funds are directed towards our core programs: Education, Women Empowerment, Special Needs support, and Environmental Conservation in Magadi and surrounding areas.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section id="team" class="fade-in">
         <h2>Our Team</h2>
         <div class="team-grid">
@@ -307,7 +333,7 @@
             <div class="team-member">
                 <img src="images/esther-mpoyio-women-affairs.jpeg" alt="Headshot of Esther Mpoyio, Women Affairs">
                 <h3>Esther Mpoyio</h3>
-                <p>Women and Gender EqualityAffairs</p>
+                <p>Women and Gender Equality Affairs</p>
             </div>
             <div class="team-member">
                 <img src="images/kariankei-kipain-environmental-affairs.jpeg" alt="Headshot of Kariankei Kipain, Environmental Management Affairs">
@@ -317,7 +343,7 @@
             <div class="team-member">
                 <img src="images/joel-morijoi-pwsn-church-affairs.jpeg" alt="Headshot of Joel Morijoi, PSWN & Church Program Affairs">
                 <h3>Joel Morijoi</h3>
-                <p>PSWN & Church Programs Affairs</p>
+                <p>PWSN & Church Programs Affairs</p>
             </div>
             <div class="team-member">
                 <img src="images/amos-letela-ict.jpeg" alt="Headshot of Amos Letela, ICT & Administration">
@@ -337,12 +363,12 @@
         <form id="join-form">
             <div class="form-group">
                 <label for="name" style="text-align:left; display:block; color:var(--primary); margin-bottom:5px; font-weight:600;">Full Name</label>
-                <input name="name" id="name" type="text" placeholder="e.g. Amos Tentemo" required>
+                <input name="name" id="name" type="text" placeholder="Your Name" required>
             </div>
             
             <div class="form-group">
                 <label for="email" style="text-align:left; display:block; color:var(--primary); margin-bottom:5px; font-weight:600;">Email Address</label>
-                <input name="email" id="email" type="email" placeholder="e.g. name@example.com" required>
+                <input name="email" id="email" type="email" placeholder="Your Email" required>
             </div>
             
             <div class="form-group">
